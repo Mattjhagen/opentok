@@ -4,6 +4,10 @@
 
 OpenTok is a short-form video sharing platform, inspired by TikTok and Vine, but with a key difference: we are committed to user privacy. We do not collect or sell your data. Our platform is funded entirely by donations from our community.
 
+
+## Sample Open Source Recommendations
+
+
 ## Getting Started
 
 To get a local copy up and running, follow these simple steps.
