@@ -2,41 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* OpenTok Design System - Dark video-first theme with neon accents */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Dark base colors */
+    --background: 220 13% 9%;
+    --foreground: 220 9% 96%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card and surface colors */
+    --card: 220 13% 11%;
+    --card-foreground: 220 9% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 13% 11%;
+    --popover-foreground: 220 9% 96%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Brand colors - Neon purple/pink gradient theme */
+    --primary: 280 100% 60%;
+    --primary-foreground: 220 9% 96%;
+    
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 220 9% 96%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 220 13% 15%;
+    --muted-foreground: 220 9% 60%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 320 100% 70%;
+    --accent-foreground: 220 13% 9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 9% 96%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Interactive elements */
+    --border: 220 13% 20%;
+    --input: 220 13% 15%;
+    --ring: 280 100% 60%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Video player specific */
+    --video-overlay: 220 13% 9% / 0.8;
+    --video-controls: 220 9% 96%;
+    
+    /* Neon gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(280 100% 60%), hsl(320 100% 70%));
+    --gradient-accent: linear-gradient(45deg, hsl(260 100% 65%), hsl(300 100% 75%));
+    --gradient-subtle: linear-gradient(180deg, hsl(220 13% 9%), hsl(220 13% 11%));
+    
+    /* Glowing effects */
+    --glow-primary: 0 0 20px hsl(280 100% 60% / 0.3);
+    --glow-accent: 0 0 30px hsl(320 100% 70% / 0.4);
+    --shadow-video: 0 10px 40px hsl(220 13% 5% / 0.5);
 
-    --radius: 0.5rem;
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +121,21 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  /* Hide scrollbars */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
   }
 }
