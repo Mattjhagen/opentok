@@ -14,7 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          follower_count: number | null
+          following_count: number | null
+          id: string
+          updated_at: string
+          username: string | null
+          video_count: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          follower_count?: number | null
+          following_count?: number | null
+          id: string
+          updated_at?: string
+          username?: string | null
+          video_count?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          follower_count?: number | null
+          following_count?: number | null
+          id?: string
+          updated_at?: string
+          username?: string | null
+          video_count?: number | null
+        }
+        Relationships: []
+      }
+      videos: {
+        Row: {
+          comment_count: number | null
+          created_at: string
+          description: string | null
+          duration: number | null
+          id: string
+          is_public: boolean | null
+          like_count: number | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          video_url: string
+          view_count: number | null
+        }
+        Insert: {
+          comment_count?: number | null
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_public?: boolean | null
+          like_count?: number | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          video_url: string
+          view_count?: number | null
+        }
+        Update: {
+          comment_count?: number | null
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_public?: boolean | null
+          like_count?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          video_url?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "videos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
