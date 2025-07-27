@@ -1,7 +1,11 @@
+import { useState } from 'react';
 import { Heart, MessageCircle, Share, Bookmark, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { VideoPlayer } from './VideoPlayer';
+import { CommentsModal } from './CommentsModal';
+import { ShareModal } from './ShareModal';
+import { useVideoInteractions } from '@/hooks/useVideoInteractions';
 
 interface VideoCardProps {
   id: string;
@@ -25,18 +29,40 @@ interface VideoCardProps {
 }
 
 export function VideoCard({
+  id,
   videoSrc,
   thumbnail,
   user,
   description,
-  likes,
-  comments,
-  shares,
-  isLiked = false,
+  likes: initialLikes,
+  comments: initialComments,
+  shares: initialShares,
+  isLiked: initialIsLiked = false,
   isBookmarked = false,
   algorithmScore = 0.85,
   algorithmFactors = ['Engagement rate', 'Recent activity', 'Similar interests']
 }: VideoCardProps) {
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [likes, setLikes] = useState(initialLikes);
+  const [comments, setComments] = useState(initialComments);
+  const [shares, setShares] = useState(initialShares);
+  
+  const {
+    isLiked,
+    likeCount,
+    commentCount,
+    shareCount,
+    toggleLike,
+    loading: likeLoading,
+    updateCommentCount,
+    updateShareCount
+  } = useVideoInteractions({
+    videoId: id,
+    onLikeUpdate: (liked, count) => setLikes(count),
+    onCommentCountUpdate: (count) => setComments(count),
+    onShareCountUpdate: (count) => setShares(count)
+  });
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
@@ -111,10 +137,16 @@ export function VideoCard({
                   ? 'bg-gradient-primary text-white shadow-glow-primary' 
                   : 'bg-background/20 hover:bg-background/30 text-foreground'
               }`}
+              onClick={toggleLike}
+              disabled={likeLoading}
             >
-              <Heart className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`} />
+              {likeLoading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current" />
+              ) : (
+                <Heart className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`} />
+              )}
             </Button>
-            <span className="text-xs text-foreground font-medium">{formatNumber(likes)}</span>
+            <span className="text-xs text-foreground font-medium">{formatNumber(likeCount || likes)}</span>
           </div>
 
           {/* Comment button */}
@@ -123,10 +155,11 @@ export function VideoCard({
               variant="ghost"
               size="lg"
               className="w-12 h-12 rounded-full bg-background/20 backdrop-blur-sm hover:bg-background/30 border-0 text-foreground"
+              onClick={() => setIsCommentsOpen(true)}
             >
               <MessageCircle className="w-6 h-6" />
             </Button>
-            <span className="text-xs text-foreground font-medium">{formatNumber(comments)}</span>
+            <span className="text-xs text-foreground font-medium">{formatNumber(commentCount || comments)}</span>
           </div>
 
           {/* Share button */}
@@ -135,10 +168,11 @@ export function VideoCard({
               variant="ghost"
               size="lg"
               className="w-12 h-12 rounded-full bg-background/20 backdrop-blur-sm hover:bg-background/30 border-0 text-foreground"
+              onClick={() => setIsShareOpen(true)}
             >
               <Share className="w-6 h-6" />
             </Button>
-            <span className="text-xs text-foreground font-medium">{formatNumber(shares)}</span>
+            <span className="text-xs text-foreground font-medium">{formatNumber(shareCount || shares)}</span>
           </div>
 
           {/* Bookmark button */}
@@ -157,6 +191,24 @@ export function VideoCard({
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <CommentsModal
+        isOpen={isCommentsOpen}
+        onClose={() => setIsCommentsOpen(false)}
+        videoId={id}
+        commentCount={commentCount || comments}
+        onCommentCountUpdate={updateCommentCount}
+      />
+      
+      <ShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        videoId={id}
+        videoTitle={description}
+        shareCount={shareCount || shares}
+        onShareCountUpdate={updateShareCount}
+      />
     </div>
   );
 }
