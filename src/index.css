@@ -139,3 +139,27 @@
     scroll-behavior: smooth;
   }
 }
+
+@layer utilities {
+  /* Custom gradient utilities */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .shadow-glow-primary {
+    box-shadow: var(--glow-primary);
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: var(--glow-primary);
+    }
+    50% {
+      box-shadow: var(--glow-accent);
+    }
+  }
+}

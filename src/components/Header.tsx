@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Search, Plus, Settings, Menu, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,9 +6,11 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { VideoUpload } from './VideoUpload';
 
 export function Header() {
   const { user, signOut } = useAuth();
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -65,6 +68,7 @@ export function Header() {
             variant="default" 
             size="sm" 
             className="bg-gradient-primary hover:opacity-90 text-white shadow-glow-primary"
+            onClick={() => setIsUploadOpen(true)}
           >
             <Plus className="w-4 h-4 mr-2" />
             Upload
@@ -107,6 +111,12 @@ export function Header() {
           </DropdownMenu>
         </div>
       </div>
+      
+      {/* Video Upload Modal */}
+      <VideoUpload 
+        isOpen={isUploadOpen} 
+        onClose={() => setIsUploadOpen(false)} 
+      />
     </header>
   );
 }
