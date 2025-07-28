@@ -17,7 +17,7 @@ interface Comment {
     username: string;
     display_name: string;
     avatar_url?: string;
-  };
+  } | null;
 }
 
 interface CommentsModalProps {
@@ -51,24 +51,35 @@ export function CommentsModal({
   const fetchComments = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // First get comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          profiles (
-            username,
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('id, content, created_at, user_id')
         .eq('video_id', videoId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setComments(data || []);
+      if (commentsError) throw commentsError;
+
+      // Then get user profiles for each comment
+      if (commentsData && commentsData.length > 0) {
+        const userIds = [...new Set(commentsData.map(c => c.user_id))];
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username, display_name, avatar_url')
+          .in('id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Combine comments with profile data
+        const commentsWithProfiles = commentsData.map(comment => ({
+          ...comment,
+          profiles: profilesData?.find(p => p.id === comment.user_id) || null
+        }));
+
+        setComments(commentsWithProfiles);
+      } else {
+        setComments([]);
+      }
     } catch (error) {
       console.error('Error fetching comments:', error);
       toast({
