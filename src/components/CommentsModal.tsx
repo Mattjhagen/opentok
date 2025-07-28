@@ -58,7 +58,7 @@ export function CommentsModal({
           content,
           created_at,
           user_id,
-          profiles!comments_user_id_fkey (
+          profiles (
             username,
             display_name,
             avatar_url
