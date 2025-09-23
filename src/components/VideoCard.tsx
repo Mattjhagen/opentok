@@ -69,8 +69,13 @@ export function VideoCard({
   });
 
   // Handle profile navigation
-  const handleProfileClick = () => {
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('Profile click triggered for user:', user);
     const cleanUsername = user.username.startsWith('@') ? user.username.slice(1) : user.username;
+    console.log('Navigating to profile:', `/profile/${cleanUsername}`);
     navigate(`/profile/${cleanUsername}`);
   };
 
@@ -114,7 +119,7 @@ export function VideoCard({
       />
 
       {/* Content Overlay */}
-      <div className="absolute inset-0 flex">
+      <div className="absolute inset-0 flex z-10">
         {/* Left side - User info and description */}
         <div className="flex-1 flex flex-col justify-end p-4 pb-20 md:pb-8">
           <div className="space-y-3">
@@ -122,9 +127,10 @@ export function VideoCard({
             <div className="flex items-center gap-3">
               <button 
                 onClick={handleProfileClick}
-                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-3 hover:opacity-80 transition-all duration-200 hover:scale-105 cursor-pointer p-1 rounded-lg hover:bg-white/5"
+                title={`View ${user.displayName}'s profile`}
               >
-                <Avatar className="w-12 h-12 ring-2 ring-primary/20">
+                <Avatar className="w-12 h-12 ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
                   <AvatarImage src={user.avatar} />
                   <AvatarFallback className="bg-gradient-primary text-white font-medium">
                     {user.displayName.slice(0, 2).toUpperCase()}
@@ -132,14 +138,14 @@ export function VideoCard({
                 </Avatar>
                 <div className="text-left">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-foreground">{user.displayName}</h3>
+                    <h3 className="font-semibold text-foreground hover:text-primary transition-colors">{user.displayName}</h3>
                     {user.verified && (
                       <div className="w-4 h-4 bg-gradient-primary rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground hover:text-primary/80 transition-colors">
                     {user.username.startsWith('@') ? user.username : `@${user.username}`}
                   </p>
                 </div>
