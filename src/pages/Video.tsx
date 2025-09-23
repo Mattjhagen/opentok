@@ -124,13 +124,24 @@ function Video() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
           <h1 className="text-2xl font-bold text-foreground mb-4">Video Not Found</h1>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-4">
             The video you're looking for doesn't exist or has been removed.
           </p>
-          <Button onClick={() => navigate('/')} className="w-full">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Go Home
-          </Button>
+          <p className="text-sm text-muted-foreground mb-6">
+            This might happen if:
+            <br />• The video was deleted
+            <br />• The link is incorrect
+            <br />• No videos have been uploaded yet
+          </p>
+          <div className="space-y-3">
+            <Button onClick={() => navigate('/')} className="w-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Go Home
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/?action=upload')} className="w-full">
+              Upload Video
+            </Button>
+          </div>
         </div>
       </div>
     );

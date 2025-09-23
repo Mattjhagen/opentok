@@ -71,6 +71,16 @@ export function VideoFeed() {
       })) || [];
 
       setVideos(transformedVideos);
+      
+      // If no videos found, show a helpful message
+      if (!data || data.length === 0) {
+        console.log('No videos found in database');
+        toast({
+          title: "No Videos Yet",
+          description: "Upload your first video to get started!",
+          variant: "default",
+        });
+      }
     } catch (error) {
       console.error('Error fetching videos:', error);
       toast({

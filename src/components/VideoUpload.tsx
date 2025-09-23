@@ -82,7 +82,16 @@ export function VideoUpload({ isOpen, onClose }: VideoUploadProps) {
         .getPublicUrl(fileName);
 
       // Create video record in database
-      const { error: dbError } = await supabase
+      console.log('Creating video record in database:', {
+        title: title.trim(),
+        description: description.trim() || null,
+        video_url: publicUrl,
+        user_id: user.id,
+        duration: null,
+        is_public: true
+      });
+
+      const { data: videoData, error: dbError } = await supabase
         .from('videos')
         .insert({
           title: title.trim(),
@@ -91,7 +100,11 @@ export function VideoUpload({ isOpen, onClose }: VideoUploadProps) {
           user_id: user.id,
           duration: null, // Can be populated later with video metadata
           is_public: true
-        });
+        })
+        .select()
+        .single();
+
+      console.log('Video database insert result:', { videoData, dbError });
 
       if (dbError) {
         // Clean up uploaded file if database insert fails
