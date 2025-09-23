@@ -252,8 +252,11 @@ const Auth = () => {
             <div className="mt-4 text-center">
               <button
                 type="button"
-                onClick={() => setShowPasswordRecovery(true)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => {
+                  console.log('Forgot password clicked');
+                  setShowPasswordRecovery(true);
+                }}
+                className="text-sm text-primary hover:text-primary/80 transition-colors underline font-medium"
               >
                 Forgot your password?
               </button>
