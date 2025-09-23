@@ -35,7 +35,7 @@ interface UserVideo {
   shares: number;
 }
 
-export function Profile() {
+function Profile() {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
@@ -352,3 +352,5 @@ export function Profile() {
     </div>
   );
 }
+
+export default Profile;
