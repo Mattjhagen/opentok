@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import VideoPlayer from '@/components/VideoPlayer';
+import { VideoPlayer } from '@/components/VideoPlayer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Heart, MessageCircle, Share2, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
