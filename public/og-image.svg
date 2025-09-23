@@ -1,0 +1,130 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00ffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0080ff;stop-opacity:0.8" />
+    </radialGradient>
+    <filter id="glow-effect">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0f1a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#001122;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg-gradient)"/>
+  
+  <!-- Large OpenTok Logo -->
+  <g transform="translate(100, 100)">
+    <!-- Programming brackets -->
+    <path d="M 80 80 Q 60 100 80 120 L 100 140 Q 120 160 140 140 L 160 120 Q 180 100 160 80 L 140 60 Q 120 40 100 60 Z" 
+          fill="url(#glow)" filter="url(#glow-effect)" stroke="url(#glow)" stroke-width="4"/>
+    <path d="M 320 80 Q 340 100 320 120 L 300 140 Q 280 160 260 140 L 240 120 Q 220 100 240 80 L 260 60 Q 280 40 300 60 Z" 
+          fill="url(#glow)" filter="url(#glow-effect)" stroke="url(#glow)" stroke-width="4"/>
+    
+    <!-- Circuit board elements -->
+    <g fill="url(#glow)" filter="url(#glow-effect)" stroke="url(#glow)" stroke-width="2">
+      <!-- Main horizontal circuit lines -->
+      <rect x="140" y="160" width="200" height="4" rx="2"/>
+      <rect x="140" y="180" width="200" height="4" rx="2"/>
+      <rect x="140" y="200" width="200" height="4" rx="2"/>
+      <rect x="140" y="220" width="200" height="4" rx="2"/>
+      <rect x="140" y="240" width="200" height="4" rx="2"/>
+      <rect x="140" y="260" width="200" height="4" rx="2"/>
+      
+      <!-- Vertical connections -->
+      <rect x="160" y="140" width="4" height="40" rx="2"/>
+      <rect x="180" y="140" width="4" height="40" rx="2"/>
+      <rect x="200" y="140" width="4" height="40" rx="2"/>
+      <rect x="220" y="140" width="4" height="40" rx="2"/>
+      <rect x="240" y="140" width="4" height="40" rx="2"/>
+      <rect x="260" y="140" width="4" height="40" rx="2"/>
+      <rect x="280" y="140" width="4" height="40" rx="2"/>
+      
+      <rect x="160" y="280" width="4" height="40" rx="2"/>
+      <rect x="180" y="280" width="4" height="40" rx="2"/>
+      <rect x="200" y="280" width="4" height="40" rx="2"/>
+      <rect x="220" y="280" width="4" height="40" rx="2"/>
+      <rect x="240" y="280" width="4" height="40" rx="2"/>
+      <rect x="260" y="280" width="4" height="40" rx="2"/>
+      <rect x="280" y="280" width="4" height="40" rx="2"/>
+      
+      <!-- Connection nodes -->
+      <circle cx="160" cy="160" r="6"/>
+      <circle cx="180" cy="160" r="6"/>
+      <circle cx="200" cy="160" r="6"/>
+      <circle cx="220" cy="160" r="6"/>
+      <circle cx="240" cy="160" r="6"/>
+      <circle cx="260" cy="160" r="6"/>
+      <circle cx="280" cy="160" r="6"/>
+      
+      <circle cx="160" cy="260" r="6"/>
+      <circle cx="180" cy="260" r="6"/>
+      <circle cx="200" cy="260" r="6"/>
+      <circle cx="220" cy="260" r="6"/>
+      <circle cx="240" cy="260" r="6"/>
+      <circle cx="260" cy="260" r="6"/>
+      <circle cx="280" cy="260" r="6"/>
+    </g>
+    
+    <!-- Central play button -->
+    <g fill="url(#glow)" filter="url(#glow-effect)">
+      <circle cx="220" cy="210" r="50" stroke="url(#glow)" stroke-width="6"/>
+      <polygon points="200,180 200,240 260,210" fill="#0a0f1a"/>
+    </g>
+    
+    <!-- Gears around the circuit -->
+    <g fill="url(#glow)" filter="url(#glow-effect)">
+      <!-- Top-left gear -->
+      <circle cx="120" cy="120" r="20"/>
+      <circle cx="120" cy="120" r="10" fill="#0a0f1a"/>
+      <rect x="118" y="100" width="4" height="16" fill="#0a0f1a"/>
+      <rect x="118" y="124" width="4" height="16" fill="#0a0f1a"/>
+      <rect x="100" y="118" width="16" height="4" fill="#0a0f1a"/>
+      <rect x="124" y="118" width="16" height="4" fill="#0a0f1a"/>
+      
+      <!-- Top-right gear -->
+      <circle cx="380" cy="120" r="20"/>
+      <circle cx="380" cy="120" r="10" fill="#0a0f1a"/>
+      <rect x="378" y="100" width="4" height="16" fill="#0a0f1a"/>
+      <rect x="378" y="124" width="4" height="16" fill="#0a0f1a"/>
+      <rect x="360" y="118" width="16" height="4" fill="#0a0f1a"/>
+      <rect x="384" y="118" width="16" height="4" fill="#0a0f1a"/>
+      
+      <!-- Bottom-left gear -->
+      <circle cx="120" cy="300" r="20"/>
+      <circle cx="120" cy="300" r="10" fill="#0a0f1a"/>
+      <rect x="118" y="280" width="4" height="16" fill="#0a0f1a"/>
+      <rect x="118" y="304" width="4" height="16" fill="#0a0f1a"/>
+      <rect x="100" y="298" width="16" height="4" fill="#0a0f1a"/>
+      <rect x="124" y="298" width="16" height="4" fill="#0a0f1a"/>
+      
+      <!-- Bottom-right gear -->
+      <circle cx="380" cy="300" r="20"/>
+      <circle cx="380" cy="300" r="10" fill="#0a0f1a"/>
+      <rect x="378" y="280" width="4" height="16" fill="#0a0f1a"/>
+      <rect x="378" y="304" width="4" height="16" fill="#0a0f1a"/>
+      <rect x="360" y="298" width="16" height="4" fill="#0a0f1a"/>
+      <rect x="384" y="298" width="16" height="4" fill="#0a0f1a"/>
+    </g>
+  </g>
+  
+  <!-- OpenTok Text -->
+  <text x="600" y="200" font-family="Arial, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="white">OpenTok</text>
+  
+  <!-- Tagline -->
+  <text x="600" y="280" font-family="Arial, sans-serif" font-size="36" text-anchor="middle" fill="url(#glow)">Vine + Vertical shorts with transparency</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="340" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="#cccccc">The transparent, open-source short video platform</text>
+  <text x="600" y="380" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="#cccccc">with full algorithm transparency</text>
+  
+  <!-- URL -->
+  <text x="600" y="480" font-family="Arial, sans-serif" font-size="28" text-anchor="middle" fill="url(#glow)">opentok.space</text>
+</svg>

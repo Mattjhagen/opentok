@@ -5,9 +5,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Create OpenTok logo icon generator
+// Create OpenTok logo icon generator with enhanced design
 function createIcon(size) {
-  const scale = size / 512; // Scale factor from 512px base
   return `<svg width="${size}" height="${size}" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="glow" cx="50%" cy="50%" r="50%">
@@ -15,7 +14,7 @@ function createIcon(size) {
       <stop offset="100%" style="stop-color:#0080ff;stop-opacity:0.8" />
     </radialGradient>
     <filter id="glow-effect">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
       <feMerge> 
         <feMergeNode in="coloredBlur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -23,92 +22,133 @@ function createIcon(size) {
     </filter>
   </defs>
   
-  <!-- Background circle -->
-  <circle cx="256" cy="256" r="240" fill="#001122" stroke="url(#glow)" stroke-width="4"/>
+  <!-- Background with subtle texture -->
+  <rect width="512" height="512" fill="#0a0f1a"/>
   
-  <!-- Programming brackets -->
+  <!-- Programming brackets with enhanced glow -->
   <path d="M 120 120 Q 100 140 120 160 L 140 180 Q 160 200 180 180 L 200 160 Q 220 140 200 120 L 180 100 Q 160 80 140 100 Z" 
-        fill="url(#glow)" filter="url(#glow-effect)"/>
+        fill="url(#glow)" filter="url(#glow-effect)" stroke="url(#glow)" stroke-width="2"/>
   <path d="M 392 120 Q 412 140 392 160 L 372 180 Q 352 200 332 180 L 312 160 Q 292 140 312 120 L 332 100 Q 352 80 372 100 Z" 
-        fill="url(#glow)" filter="url(#glow-effect)"/>
+        fill="url(#glow)" filter="url(#glow-effect)" stroke="url(#glow)" stroke-width="2"/>
   
-  <!-- Circuit board elements -->
-  <g fill="url(#glow)" filter="url(#glow-effect)">
-    <!-- Central circuit lines -->
-    <rect x="200" y="200" width="112" height="4" rx="2"/>
-    <rect x="200" y="220" width="112" height="4" rx="2"/>
-    <rect x="200" y="240" width="112" height="4" rx="2"/>
-    <rect x="200" y="260" width="112" height="4" rx="2"/>
-    <rect x="200" y="280" width="112" height="4" rx="2"/>
-    <rect x="200" y="300" width="112" height="4" rx="2"/>
+  <!-- Enhanced circuit board with branching patterns -->
+  <g fill="url(#glow)" filter="url(#glow-effect)" stroke="url(#glow)" stroke-width="1">
+    <!-- Main horizontal circuit lines -->
+    <rect x="180" y="200" width="152" height="3" rx="1.5"/>
+    <rect x="180" y="220" width="152" height="3" rx="1.5"/>
+    <rect x="180" y="240" width="152" height="3" rx="1.5"/>
+    <rect x="180" y="260" width="152" height="3" rx="1.5"/>
+    <rect x="180" y="280" width="152" height="3" rx="1.5"/>
+    <rect x="180" y="300" width="152" height="3" rx="1.5"/>
     
-    <!-- Vertical connections -->
-    <rect x="220" y="180" width="4" height="40" rx="2"/>
-    <rect x="240" y="180" width="4" height="40" rx="2"/>
-    <rect x="260" y="180" width="4" height="40" rx="2"/>
-    <rect x="280" y="180" width="4" height="40" rx="2"/>
-    <rect x="300" y="180" width="4" height="40" rx="2"/>
+    <!-- Vertical connections with branching -->
+    <rect x="200" y="180" width="3" height="40" rx="1.5"/>
+    <rect x="220" y="180" width="3" height="40" rx="1.5"/>
+    <rect x="240" y="180" width="3" height="40" rx="1.5"/>
+    <rect x="260" y="180" width="3" height="40" rx="1.5"/>
+    <rect x="280" y="180" width="3" height="40" rx="1.5"/>
+    <rect x="300" y="180" width="3" height="40" rx="1.5"/>
+    <rect x="320" y="180" width="3" height="40" rx="1.5"/>
     
-    <rect x="220" y="320" width="4" height="40" rx="2"/>
-    <rect x="240" y="320" width="4" height="40" rx="2"/>
-    <rect x="260" y="320" width="4" height="40" rx="2"/>
-    <rect x="280" y="320" width="4" height="40" rx="2"/>
-    <rect x="300" y="320" width="4" height="40" rx="2"/>
+    <rect x="200" y="320" width="3" height="40" rx="1.5"/>
+    <rect x="220" y="320" width="3" height="40" rx="1.5"/>
+    <rect x="240" y="320" width="3" height="40" rx="1.5"/>
+    <rect x="260" y="320" width="3" height="40" rx="1.5"/>
+    <rect x="280" y="320" width="3" height="40" rx="1.5"/>
+    <rect x="300" y="320" width="3" height="40" rx="1.5"/>
+    <rect x="320" y="320" width="3" height="40" rx="1.5"/>
     
-    <!-- Connection nodes -->
-    <circle cx="220" cy="200" r="6"/>
-    <circle cx="240" cy="200" r="6"/>
-    <circle cx="260" cy="200" r="6"/>
-    <circle cx="280" cy="200" r="6"/>
-    <circle cx="300" cy="200" r="6"/>
+    <!-- Branching circuit lines -->
+    <line x1="200" y1="200" x2="180" y2="200"/>
+    <line x1="220" y1="200" x2="200" y2="180"/>
+    <line x1="240" y1="200" x2="240" y2="180"/>
+    <line x1="260" y1="200" x2="280" y2="180"/>
+    <line x1="280" y1="200" x2="300" y2="180"/>
+    <line x1="300" y1="200" x2="320" y2="180"/>
+    <line x1="320" y1="200" x2="340" y2="200"/>
     
-    <circle cx="220" cy="300" r="6"/>
-    <circle cx="240" cy="300" r="6"/>
-    <circle cx="260" cy="300" r="6"/>
-    <circle cx="280" cy="300" r="6"/>
-    <circle cx="300" cy="300" r="6"/>
+    <!-- Connection nodes with enhanced glow -->
+    <circle cx="200" cy="200" r="4" fill="url(#glow)"/>
+    <circle cx="220" cy="200" r="4" fill="url(#glow)"/>
+    <circle cx="240" cy="200" r="4" fill="url(#glow)"/>
+    <circle cx="260" cy="200" r="4" fill="url(#glow)"/>
+    <circle cx="280" cy="200" r="4" fill="url(#glow)"/>
+    <circle cx="300" cy="200" r="4" fill="url(#glow)"/>
+    <circle cx="320" cy="200" r="4" fill="url(#glow)"/>
+    
+    <circle cx="200" cy="300" r="4" fill="url(#glow)"/>
+    <circle cx="220" cy="300" r="4" fill="url(#glow)"/>
+    <circle cx="240" cy="300" r="4" fill="url(#glow)"/>
+    <circle cx="260" cy="300" r="4" fill="url(#glow)"/>
+    <circle cx="280" cy="300" r="4" fill="url(#glow)"/>
+    <circle cx="300" cy="300" r="4" fill="url(#glow)"/>
+    <circle cx="320" cy="300" r="4" fill="url(#glow)"/>
   </g>
   
-  <!-- Media player controls -->
+  <!-- Central play button with enhanced design -->
   <g fill="url(#glow)" filter="url(#glow-effect)">
-    <!-- Play button (center) -->
-    <circle cx="256" cy="256" r="32"/>
-    <polygon points="248,240 248,272 280,256" fill="#001122"/>
-    
-    <!-- Rewind button (left) -->
-    <circle cx="200" cy="256" r="20"/>
-    <polygon points="192,244 192,268 208,256" fill="#001122"/>
-    <polygon points="208,244 208,268 224,256" fill="#001122"/>
-    
-    <!-- Fast forward button (right) -->
-    <circle cx="312" cy="256" r="20"/>
-    <polygon points="304,244 304,268 320,256" fill="#001122"/>
-    <polygon points="320,244 320,268 336,256" fill="#001122"/>
+    <circle cx="256" cy="256" r="36" stroke="url(#glow)" stroke-width="3"/>
+    <polygon points="244,232 244,280 284,256" fill="#0a0f1a"/>
   </g>
   
-  <!-- Small icons around the circuit -->
+  <!-- Gears positioned around the circuit -->
   <g fill="url(#glow)" filter="url(#glow-effect)">
-    <!-- Camera icon (top left) -->
-    <circle cx="160" cy="160" r="12"/>
-    <rect x="156" y="156" width="8" height="6" rx="1" fill="#001122"/>
-    <circle cx="160" cy="158" r="2" fill="#001122"/>
+    <!-- Top-left gear -->
+    <circle cx="160" cy="160" r="16"/>
+    <circle cx="160" cy="160" r="8" fill="#0a0f1a"/>
+    <rect x="158" y="144" width="4" height="12" fill="#0a0f1a"/>
+    <rect x="158" y="164" width="4" height="12" fill="#0a0f1a"/>
+    <rect x="144" y="158" width="12" height="4" fill="#0a0f1a"/>
+    <rect x="164" y="158" width="12" height="4" fill="#0a0f1a"/>
+    <rect x="150" y="150" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="166" y="150" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="150" y="166" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="166" y="166" width="4" height="4" fill="#0a0f1a"/>
     
-    <!-- Cloud icon (top right) -->
-    <ellipse cx="352" cy="160" rx="16" ry="8"/>
-    <ellipse cx="348" cy="156" rx="12" ry="6"/>
+    <!-- Top-right gear -->
+    <circle cx="352" cy="160" r="16"/>
+    <circle cx="352" cy="160" r="8" fill="#0a0f1a"/>
+    <rect x="350" y="144" width="4" height="12" fill="#0a0f1a"/>
+    <rect x="350" y="164" width="4" height="12" fill="#0a0f1a"/>
+    <rect x="336" y="158" width="12" height="4" fill="#0a0f1a"/>
+    <rect x="356" y="158" width="12" height="4" fill="#0a0f1a"/>
+    <rect x="342" y="150" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="358" y="150" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="342" y="166" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="358" y="166" width="4" height="4" fill="#0a0f1a"/>
     
-    <!-- Gear icon (bottom left) -->
-    <circle cx="160" cy="352" r="12"/>
-    <circle cx="160" cy="352" r="6" fill="#001122"/>
-    <rect x="158" y="340" width="4" height="8" fill="#001122"/>
-    <rect x="158" y="356" width="4" height="8" fill="#001122"/>
-    <rect x="148" y="350" width="8" height="4" fill="#001122"/>
-    <rect x="164" y="350" width="8" height="4" fill="#001122"/>
+    <!-- Bottom-left gear -->
+    <circle cx="160" cy="352" r="16"/>
+    <circle cx="160" cy="352" r="8" fill="#0a0f1a"/>
+    <rect x="158" y="336" width="4" height="12" fill="#0a0f1a"/>
+    <rect x="158" y="356" width="4" height="12" fill="#0a0f1a"/>
+    <rect x="144" y="350" width="12" height="4" fill="#0a0f1a"/>
+    <rect x="164" y="350" width="12" height="4" fill="#0a0f1a"/>
+    <rect x="150" y="342" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="166" y="342" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="150" y="358" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="166" y="358" width="4" height="4" fill="#0a0f1a"/>
     
-    <!-- Leaf icon (bottom right) -->
-    <ellipse cx="352" cy="352" rx="8" ry="12" transform="rotate(45 352 352)"/>
-    <ellipse cx="352" cy="352" rx="6" ry="10" transform="rotate(45 352 352)" fill="#001122"/>
+    <!-- Bottom-right gear -->
+    <circle cx="352" cy="352" r="16"/>
+    <circle cx="352" cy="352" r="8" fill="#0a0f1a"/>
+    <rect x="350" y="336" width="4" height="12" fill="#0a0f1a"/>
+    <rect x="350" y="356" width="4" height="12" fill="#0a0f1a"/>
+    <rect x="336" y="350" width="12" height="4" fill="#0a0f1a"/>
+    <rect x="356" y="350" width="12" height="4" fill="#0a0f1a"/>
+    <rect x="342" y="342" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="358" y="342" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="342" y="358" width="4" height="4" fill="#0a0f1a"/>
+    <rect x="358" y="358" width="4" height="4" fill="#0a0f1a"/>
   </g>
+  
+  <!-- Subtle bottom-right gear -->
+  <circle cx="420" cy="420" r="12" fill="url(#glow)" opacity="0.6" filter="url(#glow-effect)"/>
+  <circle cx="420" cy="420" r="6" fill="#0a0f1a"/>
+  <rect x="418" y="408" width="4" height="8" fill="#0a0f1a"/>
+  <rect x="418" y="424" width="4" height="8" fill="#0a0f1a"/>
+  <rect x="408" y="418" width="8" height="4" fill="#0a0f1a"/>
+  <rect x="424" y="418" width="8" height="4" fill="#0a0f1a"/>
 </svg>`;
 }
 
