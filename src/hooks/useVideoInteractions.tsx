@@ -34,14 +34,14 @@ export function useVideoInteractions({
   const fetchInteractionCounts = async () => {
     try {
       const [likesResult, commentsResult, sharesResult] = await Promise.all([
-        supabase.from('likes').select('id', { count: 'exact' }).eq('video_id', videoId),
-        supabase.from('comments').select('id', { count: 'exact' }).eq('video_id', videoId),
-        supabase.from('shares').select('id', { count: 'exact' }).eq('video_id', videoId)
+        supabase.from('likes').select('*').eq('video_id', videoId),
+        supabase.from('comments').select('*').eq('video_id', videoId),
+        supabase.from('shares').select('*').eq('video_id', videoId)
       ]);
 
-      const likes = likesResult.count || 0;
-      const comments = commentsResult.count || 0;
-      const shares = sharesResult.count || 0;
+      const likes = likesResult.data?.length || 0;
+      const comments = commentsResult.data?.length || 0;
+      const shares = sharesResult.data?.length || 0;
 
       setLikeCount(likes);
       setCommentCount(comments);

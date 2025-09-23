@@ -28,15 +28,23 @@ export function VideoPlayer({
 
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
+    const handleCanPlay = () => {
+      // Try to unmute when video can play
+      if (video.muted && !isMuted) {
+        video.muted = false;
+      }
+    };
 
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('canplay', handleCanPlay);
 
     return () => {
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('canplay', handleCanPlay);
     };
-  }, []);
+  }, [isMuted]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -55,6 +63,11 @@ export function VideoPlayer({
 
     video.muted = !video.muted;
     setIsMuted(video.muted);
+    
+    // If unmuting, try to play the video
+    if (!video.muted && video.paused) {
+      video.play().catch(console.error);
+    }
   };
 
   return (

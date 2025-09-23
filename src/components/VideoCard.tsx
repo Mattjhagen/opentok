@@ -102,7 +102,9 @@ export function VideoCard({
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">@{user.username}</p>
+                <p className="text-sm text-muted-foreground">
+                  {user.username.startsWith('@') ? user.username : `@${user.username}`}
+                </p>
               </div>
             </div>
 
