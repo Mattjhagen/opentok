@@ -25,6 +25,7 @@ interface Video {
 export function VideoFeed() {
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -37,34 +38,68 @@ export function VideoFeed() {
       setLoading(true);
       console.log('Starting to fetch videos...');
       
-      const { data, error } = await supabase
+      // First, try to fetch videos without the join to see if that's the issue
+      const { data: videosData, error: videosError } = await supabase
         .from('videos')
-        .select(`
-          *,
-          profiles:user_id(username, display_name, avatar_url)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (videosError) {
+        console.error('Error fetching videos:', videosError);
+        throw videosError;
       }
 
-      console.log('Fetched videos from database:', data);
-      console.log('Number of videos found:', data?.length || 0);
+      console.log('Fetched videos from database:', videosData);
+      console.log('Number of videos found:', videosData?.length || 0);
+
+      if (!videosData || videosData.length === 0) {
+        console.log('No videos found in database');
+        setVideos([]);
+        toast({
+          title: "No Videos Yet",
+          description: "Upload your first video to get started!",
+          variant: "default",
+        });
+        return;
+      }
+
+      // Now fetch profiles separately to avoid join issues
+      const userIds = [...new Set(videosData.map(video => video.user_id))];
+      console.log('Fetching profiles for user IDs:', userIds);
+      
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        // Continue without profiles data
+      }
+
+      console.log('Fetched profiles:', profilesData);
+
+      // Create a map of profiles for easy lookup
+      const profilesMap = new Map();
+      if (profilesData) {
+        profilesData.forEach(profile => {
+          profilesMap.set(profile.id, profile);
+        });
+      }
 
       // Safely transform the data to match VideoCard interface
-      const transformedVideos = (data || []).map((video: any) => {
+      const transformedVideos = videosData.map((video: any) => {
         try {
+          const profile = profilesMap.get(video.user_id);
           return {
             id: video.id || 'unknown',
             videoSrc: video.video_url || '',
             user: {
               id: video.user_id || 'unknown',
-              username: video.profiles?.username || 'unknown',
-              displayName: video.profiles?.display_name || 'Unknown User',
-              avatar: video.profiles?.avatar_url || null,
+              username: profile?.username || 'unknown',
+              displayName: profile?.display_name || 'Unknown User',
+              avatar: profile?.avatar_url || null,
               verified: false,
             },
             description: video.description || video.title || 'No description',
@@ -85,19 +120,11 @@ export function VideoFeed() {
       console.log('Transformed videos:', transformedVideos);
       setVideos(transformedVideos);
       
-      // If no videos found, show a helpful message
-      if (!data || data.length === 0) {
-        console.log('No videos found in database');
-        toast({
-          title: "No Videos Yet",
-          description: "Upload your first video to get started!",
-          variant: "default",
-        });
-      }
     } catch (error) {
       console.error('Error fetching videos:', error);
       // Set empty array to prevent crashes
       setVideos([]);
+      setError('Failed to load videos');
       toast({
         title: "Error",
         description: "Failed to load videos. Please try again.",
@@ -120,6 +147,29 @@ export function VideoFeed() {
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2 text-destructive">Error Loading Videos</h3>
+          <p className="text-muted-foreground mb-4">
+            {error}
+          </p>
+          <button 
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              fetchVideos();
+            }}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
