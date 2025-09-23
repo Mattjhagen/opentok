@@ -1,0 +1,277 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import VideoPlayer from '@/components/VideoPlayer';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Heart, MessageCircle, Share2, User } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useVideoInteractions } from '@/hooks/useVideoInteractions';
+import EnhancedShareModal from '@/components/EnhancedShareModal';
+
+interface Video {
+  id: string;
+  title: string;
+  description: string;
+  video_url: string;
+  thumbnail_url?: string;
+  duration?: number;
+  created_at: string;
+  user_id: string;
+  profiles: {
+    username: string;
+    display_name: string;
+    avatar_url?: string;
+  };
+}
+
+function Video() {
+  const { videoId } = useParams<{ videoId: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [video, setVideo] = useState<Video | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const {
+    isLiked,
+    likeCount,
+    commentCount,
+    shareCount,
+    handleLike,
+    handleShare,
+    isLoading: interactionsLoading
+  } = useVideoInteractions(videoId || '');
+
+  useEffect(() => {
+    if (videoId) {
+      fetchVideo();
+    }
+  }, [videoId]);
+
+  const fetchVideo = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('videos')
+        .select(`
+          *,
+          profiles (
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('id', videoId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching video:', fetchError);
+        setError('Video not found');
+        return;
+      }
+
+      setVideo(data);
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Failed to load video');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleShareClick = () => {
+    if (video) {
+      handleShare();
+      setIsShareModalOpen(true);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading video...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !video) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Video Not Found</h1>
+          <p className="text-muted-foreground mb-6">
+            The video you're looking for doesn't exist or has been removed.
+          </p>
+          <Button onClick={() => navigate('/')} className="w-full">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Go Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+          <h1 className="text-lg font-semibold">OpenTok</h1>
+          <div className="w-16" /> {/* Spacer for centering */}
+        </div>
+      </div>
+
+      {/* Video Content */}
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Video Player */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardContent className="p-0">
+                <div className="relative aspect-[9/16] bg-black rounded-lg overflow-hidden">
+                  <VideoPlayer
+                    src={video.video_url}
+                    poster={video.thumbnail_url}
+                    muted={false}
+                    controls
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Video Info */}
+          <div className="space-y-4">
+            {/* User Info */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    {video.profiles.avatar_url ? (
+                      <img
+                        src={video.profiles.avatar_url}
+                        alt={video.profiles.display_name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-5 h-5 text-primary" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-semibold">
+                      {video.profiles.username.startsWith('@') 
+                        ? video.profiles.username 
+                        : `@${video.profiles.username}`}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {video.profiles.display_name}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Video Details */}
+            <Card>
+              <CardContent className="p-4">
+                <h2 className="text-xl font-bold mb-2">{video.title}</h2>
+                {video.description && (
+                  <p className="text-muted-foreground mb-4">{video.description}</p>
+                )}
+                
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span>{new Date(video.created_at).toLocaleDateString()}</span>
+                  {video.duration && (
+                    <span>{Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Interactions */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant={isLiked ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleLike}
+                    disabled={interactionsLoading}
+                    className="flex items-center gap-2"
+                  >
+                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                    {likeCount}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    {commentCount}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShareClick}
+                    className="flex items-center gap-2"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    {shareCount}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tags */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-2">Tags</h3>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">#video</Badge>
+                  <Badge variant="secondary">#shorts</Badge>
+                  <Badge variant="secondary">#opentok</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Share Modal */}
+      {video && (
+        <EnhancedShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          title={video.title}
+          description={video.description}
+          url={`${window.location.origin}/video/${video.id}`}
+          videoUrl={video.video_url}
+          thumbnailUrl={video.thumbnail_url}
+        />
+      )}
+    </div>
+  );
+}
+
+export default Video;
