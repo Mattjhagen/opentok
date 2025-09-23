@@ -13,12 +13,15 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('Index component - Auth state:', { user: !!user, loading });
     if (!loading && !user) {
+      console.log('Index component - Redirecting to auth');
       navigate('/auth');
     }
   }, [user, loading, navigate]);
 
   if (loading) {
+    console.log('Index component - Showing loading state');
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -30,8 +33,17 @@ const Index = () => {
   }
 
   if (!user) {
-    return null; // Will redirect to auth
+    console.log('Index component - No user, should redirect to auth');
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
+
+  console.log('Index component - Rendering main content for user:', user.id);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
