@@ -10,12 +10,14 @@ import { useToast } from '@/hooks/use-toast';
 import { VideoUpload } from './VideoUpload';
 import { ChatSystem } from './ChatSystem';
 import { NotificationSystem, useNotificationCount } from './NotificationSystem';
+import { SettingsModal } from './SettingsModal';
 
 export function Header() {
   const { user, signOut } = useAuth();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const unreadCount = useNotificationCount();
   const { toast } = useToast();
 
@@ -44,10 +46,10 @@ export function Header() {
           </Button>
           
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-sm">O</span>
             </div>
-            <h1 className="font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="font-bold text-xl text-foreground">
               OpenTok
             </h1>
           </div>
@@ -108,7 +110,12 @@ export function Header() {
             )}
           </Button>
           
-          <Button variant="ghost" size="sm">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setIsSettingsOpen(true)}
+            title="Settings"
+          >
             <Settings className="w-5 h-5" />
           </Button>
 
@@ -162,6 +169,12 @@ export function Header() {
       <NotificationSystem
         isOpen={isNotificationsOpen}
         onClose={() => setIsNotificationsOpen(false)}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </header>
   );
