@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Settings, Menu, LogOut, User, MessageCircle, Bell, Home, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { VideoUpload } from './VideoUpload';
 import { ChatSystem } from './ChatSystem';
 import { NotificationSystem, useNotificationCount } from './NotificationSystem';
@@ -22,8 +23,60 @@ export function Header() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const unreadCount = useNotificationCount();
   const { toast } = useToast();
+
+  // Fetch user profile when user changes
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            setUserProfile(null);
+          } else {
+            console.log('Fetched user profile for header:', profile);
+            setUserProfile(profile);
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          setUserProfile(null);
+        }
+      } else {
+        setUserProfile(null);
+      }
+    };
+
+    fetchUserProfile();
+
+    // Listen for profile updates
+    const channel = supabase
+      .channel('profile-updates')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'profiles',
+          filter: `id=eq.${user?.id}`
+        }, 
+        (payload) => {
+          console.log('Profile updated in header:', payload.new);
+          setUserProfile(payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -67,13 +120,13 @@ export function Header() {
                 {user && (
                   <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
                     <Avatar className="w-12 h-12">
-                      <AvatarImage src={user?.user_metadata?.avatar_url} />
+                      <AvatarImage src={userProfile?.avatar_url} />
                       <AvatarFallback className="bg-gradient-primary text-white">
-                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                        {userProfile?.display_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="font-semibold">{user?.user_metadata?.display_name || 'User'}</p>
+                      <p className="font-semibold">{userProfile?.display_name || user?.user_metadata?.display_name || 'User'}</p>
                       <p className="text-sm text-muted-foreground">{user?.email}</p>
                     </div>
                   </div>
@@ -97,7 +150,7 @@ export function Header() {
                     variant="ghost" 
                     className="w-full justify-start"
                     onClick={() => {
-                      const username = user?.user_metadata?.username || 'me';
+                      const username = userProfile?.username || user?.user_metadata?.username || 'me';
                       const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
                       navigate(`/profile/${cleanUsername}`);
                       setIsMobileMenuOpen(false);
@@ -221,15 +274,15 @@ export function Header() {
               size="sm" 
               className="p-1"
               onClick={() => {
-                const username = user?.user_metadata?.username || 'me';
+                const username = userProfile?.username || user?.user_metadata?.username || 'me';
                 const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
                 navigate(`/profile/${cleanUsername}`);
               }}
             >
               <Avatar className="w-8 h-8">
-                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarImage src={userProfile?.avatar_url} />
                 <AvatarFallback className="bg-gradient-primary text-white text-xs">
-                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  {userProfile?.display_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -289,9 +342,9 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="p-1">
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src={user?.user_metadata?.avatar_url} />
+                    <AvatarImage src={userProfile?.avatar_url} />
                     <AvatarFallback className="bg-gradient-primary text-white text-xs">
-                      {user?.email?.charAt(0).toUpperCase() || 'U'}
+                      {userProfile?.display_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -300,7 +353,7 @@ export function Header() {
                 <DropdownMenuItem 
                   className="flex items-center gap-2"
                   onClick={() => {
-                    const username = user?.user_metadata?.username || 'me';
+                    const username = userProfile?.username || user?.user_metadata?.username || 'me';
                     const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
                     navigate(`/profile/${cleanUsername}`);
                   }}
@@ -308,7 +361,7 @@ export function Header() {
                   <User className="w-4 h-4" />
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">
-                      {user?.user_metadata?.display_name || 'User'}
+                      {userProfile?.display_name || user?.user_metadata?.display_name || 'User'}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {user?.email}
