@@ -2,7 +2,7 @@ services:
   - type: web
     name: opentok-pwa
     env: static
-    buildCommand: npm install && npm run build:pwa
+    buildCommand: npm run build && npm run generate-icons
     staticPublishPath: ./dist
     packageManager: npm
     nodeVersion: 20
