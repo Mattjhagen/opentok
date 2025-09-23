@@ -43,7 +43,7 @@ const Index = () => {
     );
   }
 
-  console.log('Index component - Rendering main content for user:', user.id);
+  console.log('Index component - Rendering main content for user:', user.id, 'VideoFeed should be visible');
 
   return (
     <div className="min-h-screen bg-background text-foreground">
