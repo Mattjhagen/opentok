@@ -55,13 +55,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-2xl max-h-[80vh] overflow-y-auto"
+        aria-describedby="settings-description"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="w-5 h-5" />
             Settings
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription id="settings-description">
             Customize your OpenTok experience and manage your account preferences.
           </DialogDescription>
         </DialogHeader>

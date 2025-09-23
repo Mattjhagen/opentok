@@ -134,12 +134,18 @@ export function VideoUpload({ isOpen, onClose }: VideoUploadProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent 
+        className="sm:max-w-md"
+        aria-describedby="upload-description"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Video className="w-5 h-5" />
             Upload Video
           </DialogTitle>
+          <p id="upload-description" className="text-sm text-muted-foreground">
+            Upload a new video to share with the community.
+          </p>
         </DialogHeader>
 
         <div className="space-y-4">

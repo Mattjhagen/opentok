@@ -167,12 +167,18 @@ export function CommentsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md h-[600px] flex flex-col">
+      <DialogContent 
+        className="sm:max-w-md h-[600px] flex flex-col"
+        aria-describedby="comments-description"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5" />
             Comments ({commentCount})
           </DialogTitle>
+          <p id="comments-description" className="text-sm text-muted-foreground">
+            View and add comments for this video.
+          </p>
         </DialogHeader>
 
         {/* Comments List */}

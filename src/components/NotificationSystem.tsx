@@ -61,10 +61,7 @@ export function NotificationSystem({ isOpen, onClose }: NotificationSystemProps)
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select(`
-          *,
-          sender:profiles!notifications_sender_id_fkey(username, display_name, avatar_url)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -224,7 +221,10 @@ export function NotificationSystem({ isOpen, onClose }: NotificationSystemProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md h-[80vh] p-0">
+      <DialogContent 
+        className="max-w-md h-[80vh] p-0"
+        aria-describedby="notifications-description"
+      >
         <DialogHeader className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
@@ -236,6 +236,9 @@ export function NotificationSystem({ isOpen, onClose }: NotificationSystemProps)
                 </Badge>
               )}
             </DialogTitle>
+            <p id="notifications-description" className="text-sm text-muted-foreground">
+              View your recent notifications and updates.
+            </p>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
