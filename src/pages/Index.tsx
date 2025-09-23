@@ -52,8 +52,14 @@ const Index = () => {
       
       {/* Main Content */}
       <main className="pt-16 relative">
-        {/* Video Feed */}
-        <VideoFeed />
+        {/* Temporary simple content to test if the error is with VideoFeed */}
+        <div className="h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Welcome to OpenTok!</h1>
+            <p className="text-muted-foreground mb-4">User: {user.email}</p>
+            <p className="text-sm text-muted-foreground">Testing if VideoFeed is causing the error...</p>
+          </div>
+        </div>
         
         {/* Floating Algorithm Button */}
         <Button
