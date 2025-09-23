@@ -98,6 +98,15 @@ function Profile() {
               
             console.log('Profiles table check:', { allProfiles, tableError });
             
+            // Check if there's already a profile for this user with @ symbol
+            const { data: profileWithAt, error: atError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('username', `@${cleanUsername}`)
+              .single();
+              
+            console.log('Profile with @ symbol check:', { profileWithAt, atError });
+            
             // Check if a profile already exists for this user ID
             const { data: existingProfile, error: checkError } = await supabase
               .from('profiles')
@@ -115,6 +124,17 @@ function Profile() {
                 navigate(`/profile/${existingProfile.username}`, { replace: true });
                 return;
               }
+              return;
+            }
+            
+            // Check if profile exists with @ symbol
+            if (profileWithAt && !atError) {
+              console.log('Profile exists with @ symbol, using it:', profileWithAt);
+              setProfile(profileWithAt);
+              setIsCurrentUser(true);
+              
+              // Redirect to the correct profile URL (without @)
+              navigate(`/profile/${cleanUsername}`, { replace: true });
               return;
             }
             
@@ -416,7 +436,7 @@ function Profile() {
                 </Avatar>
                 <div className="text-center md:text-left">
                   <h2 className="text-2xl font-bold">{profile.display_name}</h2>
-                  <p className="text-muted-foreground">@{profile.username}</p>
+                  <p className="text-muted-foreground">{profile.username.startsWith('@') ? profile.username : `@${profile.username}`}</p>
                   {isCurrentUser && (
                     <Badge variant="secondary" className="mt-2">
                       You
