@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { VideoProvider } from "@/contexts/VideoContext";
 import { PWAInstallPrompt, FloatingInstallButton } from "@/components/PWAInstallPrompt";
 import { usePWA } from "@/hooks/usePWA";
 import keepAliveService from "@/utils/keepAlive";
@@ -12,6 +13,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Video from "./pages/Video";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,22 +43,25 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/profile/:username" element={<Profile />} />
-              <Route path="/video/:videoId" element={<Video />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-          <PWAInstallPrompt />
-          <FloatingInstallButton />
-        </TooltipProvider>
+        <VideoProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/profile/:username" element={<Profile />} />
+                <Route path="/video/:videoId" element={<Video />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+            <PWAInstallPrompt />
+            <FloatingInstallButton />
+          </TooltipProvider>
+        </VideoProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

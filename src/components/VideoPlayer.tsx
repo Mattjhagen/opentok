@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2, VolumeX, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useVideoContext } from '@/contexts/VideoContext';
 
 interface VideoPlayerProps {
   src: string;
@@ -8,6 +9,7 @@ interface VideoPlayerProps {
   autoPlay?: boolean;
   muted?: boolean;
   loop?: boolean;
+  videoId?: string;
 }
 
 export function VideoPlayer({ 
@@ -15,12 +17,14 @@ export function VideoPlayer({
   poster, 
   autoPlay = true, 
   muted = false, 
-  loop = true 
+  loop = true,
+  videoId
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [isMuted, setIsMuted] = useState(muted);
   const [showControls, setShowControls] = useState(false);
+  const { currentPlayingVideo, setCurrentPlayingVideo } = useVideoContext();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -45,6 +49,36 @@ export function VideoPlayer({
       video.removeEventListener('canplay', handleCanPlay);
     };
   }, [isMuted]);
+
+  // Handle dynamic changes to autoPlay and muted props
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Update muted state
+    video.muted = muted;
+    setIsMuted(muted);
+
+    // Handle autoPlay changes
+    if (autoPlay && !video.paused) {
+      // Video is already playing, no need to do anything
+      return;
+    }
+
+    if (autoPlay) {
+      // Try to play the video
+      video.play().catch((error) => {
+        console.log('Autoplay failed:', error);
+        // If autoplay fails, mute the video and try again
+        video.muted = true;
+        setIsMuted(true);
+        video.play().catch(console.error);
+      });
+    } else {
+      // Pause the video
+      video.pause();
+    }
+  }, [autoPlay, muted]);
 
   const togglePlay = () => {
     const video = videoRef.current;

@@ -6,7 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Video } from 'lucide-react';
+import { Eye, EyeOff, Video, Shield } from 'lucide-react';
+import { PasswordRecovery } from '@/components/PasswordRecovery';
+import { TwoFactorVerification } from '@/components/TwoFactorVerification';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,6 +18,9 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPasswordRecovery, setShowPasswordRecovery] = useState(false);
+  const [show2FA, setShow2FA] = useState(false);
+  const [pendingUser, setPendingUser] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -37,7 +42,7 @@ const Auth = () => {
     try {
       if (isLogin) {
         // Login
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -48,6 +53,15 @@ const Auth = () => {
             description: error.message,
             variant: "destructive",
           });
+          return;
+        }
+
+        // Check if user has 2FA enabled
+        const user = data.user;
+        if (user?.user_metadata?.two_factor_enabled) {
+          // Store user data and show 2FA verification
+          setPendingUser(user);
+          setShow2FA(true);
           return;
         }
 
@@ -94,6 +108,45 @@ const Auth = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handle2FAVerification = async (code: string): Promise<boolean> => {
+    try {
+      // In a real implementation, you would verify the TOTP code server-side
+      // For now, we'll simulate the verification
+      const isValid = await simulateTOTPVerification(code, pendingUser?.user_metadata?.totp_secret);
+      
+      if (isValid) {
+        // Complete the login process
+        toast({
+          title: "Welcome back!",
+          description: "You've been logged in successfully.",
+        });
+        navigate('/');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('2FA verification error:', error);
+      return false;
+    }
+  };
+
+  // Simulate TOTP verification (in real app, this would be server-side)
+  const simulateTOTPVerification = async (code: string, secret: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // For demo purposes, accept any 6-digit code
+        resolve(code.length === 6 && /^\d+$/.test(code));
+      }, 1000);
+    });
+  };
+
+  const handleBackFrom2FA = () => {
+    setShow2FA(false);
+    setPendingUser(null);
+    // Sign out the user since 2FA failed
+    supabase.auth.signOut();
   };
 
   return (
@@ -195,6 +248,18 @@ const Auth = () => {
             </Button>
           </form>
           
+          {isLogin && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => setShowPasswordRecovery(true)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Forgot your password?
+              </button>
+            </div>
+          )}
+          
           <div className="mt-6 text-center">
             <button
               type="button"
@@ -209,6 +274,21 @@ const Auth = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Password Recovery Modal */}
+      <PasswordRecovery
+        isOpen={showPasswordRecovery}
+        onClose={() => setShowPasswordRecovery(false)}
+        onBackToLogin={() => setShowPasswordRecovery(false)}
+      />
+
+      {/* 2FA Verification Modal */}
+      <TwoFactorVerification
+        isOpen={show2FA}
+        onClose={() => setShow2FA(false)}
+        onVerify={handle2FAVerification}
+        onBack={handleBackFrom2FA}
+      />
     </div>
   );
 };

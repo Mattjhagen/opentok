@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Heart, MessageCircle, Share, Bookmark, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -47,6 +47,8 @@ export function VideoCard({
   const [likes, setLikes] = useState(initialLikes);
   const [comments, setComments] = useState(initialComments);
   const [shares, setShares] = useState(initialShares);
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   
   const {
     isLiked,
@@ -63,6 +65,29 @@ export function VideoCard({
     onCommentCountUpdate: (count) => setComments(count),
     onShareCountUpdate: (count) => setShares(count)
   });
+
+  // Intersection Observer to detect when video is visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0.5, // Video is considered visible when 50% is in view
+        rootMargin: '0px'
+      }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, []);
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
@@ -70,13 +95,13 @@ export function VideoCard({
   };
 
   return (
-    <div className="relative w-full h-screen bg-card snap-start snap-always">
+    <div ref={cardRef} className="relative w-full h-screen bg-card snap-start snap-always">
       {/* Video Player */}
       <VideoPlayer 
         src={videoSrc} 
         poster={thumbnail}
-        autoPlay={true}
-        muted={false}
+        autoPlay={isVisible}
+        muted={!isVisible}
         loop={true}
       />
 

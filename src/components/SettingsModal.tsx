@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { TwoFactorAuth } from './TwoFactorAuth';
 import { 
   User, 
   Bell, 
@@ -29,6 +30,7 @@ interface SettingsModalProps {
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [show2FASetup, setShow2FASetup] = useState(false);
   const [settings, setSettings] = useState({
     notifications: true,
     darkMode: true,
@@ -193,6 +195,27 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               Privacy & Algorithm
             </h3>
             <div className="space-y-4">
+              {/* Two-Factor Authentication */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="twoFactorAuth">Two-Factor Authentication</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Add an extra layer of security to your account
+                  </p>
+                  {user?.user_metadata?.two_factor_enabled && (
+                    <Badge variant="default" className="text-xs">
+                      Enabled
+                    </Badge>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShow2FASetup(true)}
+                >
+                  {user?.user_metadata?.two_factor_enabled ? 'Manage' : 'Enable'}
+                </Button>
+              </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label htmlFor="algorithmTransparency">Algorithm Transparency</Label>
@@ -273,6 +296,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </Button>
         </div>
       </DialogContent>
+
+      {/* 2FA Setup Modal */}
+      <TwoFactorAuth
+        isOpen={show2FASetup}
+        onClose={() => setShow2FASetup(false)}
+        onSetupComplete={() => {
+          setShow2FASetup(false);
+          toast({
+            title: "2FA Enabled",
+            description: "Two-factor authentication has been successfully enabled.",
+          });
+        }}
+      />
     </Dialog>
   );
 }
