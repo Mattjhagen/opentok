@@ -76,7 +76,7 @@ export function VideoCard({
         src={videoSrc} 
         poster={thumbnail}
         autoPlay={true}
-        muted={true}
+        muted={false}
         loop={true}
       />
 

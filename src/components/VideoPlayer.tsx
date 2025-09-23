@@ -14,7 +14,7 @@ export function VideoPlayer({
   src, 
   poster, 
   autoPlay = true, 
-  muted = true, 
+  muted = false, 
   loop = true 
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -75,6 +75,13 @@ export function VideoPlayer({
         className="w-full h-full object-cover bg-card"
       />
       
+      {/* Mute Indicator (always visible when muted) */}
+      {isMuted && (
+        <div className="absolute top-4 right-4 bg-red-500/80 backdrop-blur-sm rounded-full p-2">
+          <VolumeX className="w-4 h-4 text-white" />
+        </div>
+      )}
+
       {/* Video Controls Overlay */}
       <div 
         className={`absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent transition-opacity duration-300 ${
@@ -106,11 +113,16 @@ export function VideoPlayer({
             <Button
               variant="ghost"
               size="sm"
-              className="w-10 h-10 rounded-full bg-background/20 backdrop-blur-sm hover:bg-background/30 border-0"
+              className={`w-10 h-10 rounded-full backdrop-blur-sm border-0 ${
+                isMuted 
+                  ? 'bg-red-500/20 hover:bg-red-500/30' 
+                  : 'bg-background/20 hover:bg-background/30'
+              }`}
               onClick={(e) => {
                 e.stopPropagation();
                 toggleMute();
               }}
+              title={isMuted ? 'Unmute video' : 'Mute video'}
             >
               {isMuted ? (
                 <VolumeX className="w-4 h-4 text-foreground" />
