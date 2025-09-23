@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PWAInstallPrompt, FloatingInstallButton } from "@/components/PWAInstallPrompt";
 import { usePWA } from "@/hooks/usePWA";
+import keepAliveService from "@/utils/keepAlive";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -24,6 +25,17 @@ const App = () => {
       subscribeToPushNotifications();
     }
   }, [subscribeToPushNotifications]);
+
+  // Start keep-alive service to prevent Render from sleeping
+  React.useEffect(() => {
+    console.log('🚀 Starting keep-alive service for Render');
+    keepAliveService.start();
+    
+    // Cleanup on unmount
+    return () => {
+      keepAliveService.stop();
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

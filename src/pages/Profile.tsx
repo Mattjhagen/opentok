@@ -56,14 +56,49 @@ function Profile() {
     try {
       setLoading(true);
       
+      // Clean username (remove @ if present)
+      const cleanUsername = username?.startsWith('@') ? username.slice(1) : username;
+      
       // Fetch user profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('username', username)
+        .eq('username', cleanUsername)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
+        
+        // If profile doesn't exist and this is the current user, create it
+        if (profileError.code === 'PGRST116' && currentUser && cleanUsername === currentUser.user_metadata?.username) {
+          console.log('Creating profile for current user...');
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: currentUser.id,
+              username: cleanUsername,
+              display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
+            })
+            .select()
+            .single();
+            
+          if (createError) {
+            console.error('Error creating profile:', createError);
+            throw createError;
+          }
+          
+          setProfile(newProfile);
+          setIsCurrentUser(true);
+          return; // Skip video fetching for now
+        }
+        
+        throw profileError;
+      }
+      
+      if (!profileData) {
+        throw new Error('Profile not found');
+      }
+      
       setProfile(profileData);
 
       // Check if this is the current user's profile
