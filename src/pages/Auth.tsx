@@ -286,11 +286,6 @@ const Auth = () => {
             </div>
           )}
           
-          {/* Debug info */}
-          <div className="mt-2 text-center text-xs text-gray-500">
-            Debug: isLogin = {isLogin.toString()}
-          </div>
-          
           <div className="mt-6 text-center">
             <button
               type="button"

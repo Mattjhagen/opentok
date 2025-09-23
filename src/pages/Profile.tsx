@@ -405,6 +405,16 @@ function Profile() {
                     <Share2 className="w-4 h-4 mr-2" />
                     Share Profile
                   </Button>
+                  {!isCurrentUser && currentUser && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate(`/chat/${profile.id}`)}
+                      className="bg-transparent border-primary/20 text-primary hover:bg-primary/10"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Message
+                    </Button>
+                  )}
                   {isCurrentUser && (
                     <Button variant="outline" onClick={() => setIsEditModalOpen(true)}>
                       Edit Profile

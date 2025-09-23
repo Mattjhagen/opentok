@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Heart, MessageCircle, Share, Bookmark, TrendingUp } from 'lucide-react';
+import { Heart, Share, Bookmark, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { VideoPlayer } from './VideoPlayer';
@@ -7,7 +7,6 @@ import { CommentsModal } from './CommentsModal';
 import { EnhancedShareModal } from './EnhancedShareModal';
 import { useVideoInteractions } from '@/hooks/useVideoInteractions';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 
 interface VideoCardProps {
   id: string;
@@ -52,7 +51,6 @@ export function VideoCard({
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { user: currentUser } = useAuth();
   
   const {
     isLiked,
@@ -74,22 +72,6 @@ export function VideoCard({
   const handleProfileClick = () => {
     const cleanUsername = user.username.startsWith('@') ? user.username.slice(1) : user.username;
     navigate(`/profile/${cleanUsername}`);
-  };
-
-  // Handle messaging
-  const handleMessageClick = () => {
-    if (!currentUser) {
-      navigate('/auth');
-      return;
-    }
-    
-    if (currentUser.id === user.id) {
-      // Can't message yourself
-      return;
-    }
-    
-    // Navigate to chat with this user
-    navigate(`/chat/${user.id}`);
   };
 
   // Intersection Observer to detect when video is visible
@@ -163,18 +145,6 @@ export function VideoCard({
                 </div>
               </button>
               
-              {/* Message button - only show if not current user */}
-              {currentUser && currentUser.id !== user.id && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleMessageClick}
-                  className="ml-auto bg-transparent border-primary/20 text-primary hover:bg-primary/10"
-                >
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  Message
-                </Button>
-              )}
             </div>
 
             {/* Description */}
