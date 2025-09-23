@@ -13,7 +13,7 @@ interface Message {
   id: string;
   content: string;
   sender_id: string;
-  chat_id: string;
+  receiver_id: string;
   created_at: string;
   sender?: {
     id: string;
@@ -33,7 +33,6 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [otherUser, setOtherUser] = useState<any>(null);
-  const [chatId, setChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when new messages arrive
@@ -78,94 +77,66 @@ export default function Chat() {
     fetchOtherUser();
   }, [userId, navigate, toast]);
 
-  // Fetch or create chat and messages
+  // Fetch messages between current user and other user
   useEffect(() => {
-    const fetchChatAndMessages = async () => {
+    const fetchMessages = async () => {
       if (!currentUser || !userId) return;
 
       try {
         setLoading(true);
+        console.log('Fetching messages between:', currentUser.id, 'and', userId);
         
-        // First, try to find an existing chat between the two users
-        const { data: existingChats, error: findError } = await supabase
-          .from('chats')
-          .select('id')
-          .contains('participants', [currentUser.id, userId]);
-
-        if (findError) {
-          console.error('Error finding existing chat:', findError);
-        }
-
-        let chatIdToUse = existingChats?.[0]?.id;
-
-        // If no chat exists, create one
-        if (!chatIdToUse) {
-          console.log('No existing chat found, creating new one...');
-          const { data: newChat, error: createError } = await supabase
-            .from('chats')
-            .insert({
-              participants: [currentUser.id, userId]
-            })
-            .select('id')
-            .single();
-
-          if (createError) {
-            console.error('Error creating chat:', createError);
-            toast({
-              title: "Error",
-              description: "Failed to create chat. Please try again.",
-              variant: "destructive",
-            });
-            return;
-          }
-
-          chatIdToUse = newChat.id;
-        }
-
-        console.log('Using chat ID:', chatIdToUse);
-        setChatId(chatIdToUse);
-
-        // Then fetch messages for this chat
+        // Fetch messages between the two users (both directions)
         const { data: messagesData, error: messagesError } = await supabase
-          .from('chat_messages')
+          .from('direct_messages')
           .select(`
             *,
-            sender:profiles!chat_messages_sender_id_fkey(
+            sender:profiles!direct_messages_sender_id_fkey(
               id,
               username,
               display_name,
               avatar_url
             )
           `)
-          .eq('chat_id', chatIdToUse)
+          .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUser.id})`)
           .order('created_at', { ascending: true });
 
         if (messagesError) {
           console.error('Error fetching messages:', messagesError);
+          toast({
+            title: "Error",
+            description: `Failed to load messages: ${messagesError.message}`,
+            variant: "destructive",
+          });
           return;
         }
 
         console.log('Fetched messages:', messagesData);
         setMessages(messagesData || []);
       } catch (error) {
-        console.error('Error fetching chat and messages:', error);
+        console.error('Error fetching messages:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load messages",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchChatAndMessages();
+    fetchMessages();
 
     // Set up real-time subscription for new messages
     const channel = supabase
-      .channel('chat_messages')
+      .channel('direct_messages')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'chat_messages',
-          filter: `chat_id=eq.${chatId}`
+          table: 'direct_messages',
+          filter: `or(and(sender_id.eq.${currentUser?.id},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUser?.id}))`
         },
         (payload) => {
           console.log('New message received:', payload);
@@ -177,16 +148,16 @@ export default function Chat() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUser, userId, chatId]);
+  }, [currentUser, userId]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newMessage.trim() || !currentUser || !chatId || sending) {
+    if (!newMessage.trim() || !currentUser || !userId || sending) {
       console.log('Message send blocked:', {
         hasMessage: !!newMessage.trim(),
         hasUser: !!currentUser,
-        hasChatId: !!chatId,
+        hasUserId: !!userId,
         isSending: sending
       });
       return;
@@ -197,15 +168,15 @@ export default function Chat() {
       console.log('Sending message:', {
         content: newMessage.trim(),
         sender_id: currentUser.id,
-        chat_id: chatId
+        receiver_id: userId
       });
       
       const { data, error } = await supabase
-        .from('chat_messages')
+        .from('direct_messages')
         .insert({
           content: newMessage.trim(),
           sender_id: currentUser.id,
-          chat_id: chatId
+          receiver_id: userId
         })
         .select()
         .single();
