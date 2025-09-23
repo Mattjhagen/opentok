@@ -8,7 +8,7 @@ import { ArrowLeft, Heart, MessageCircle, Share2, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useVideoInteractions } from '@/hooks/useVideoInteractions';
-import EnhancedShareModal from '@/components/EnhancedShareModal';
+import { EnhancedShareModal } from '@/components/EnhancedShareModal';
 
 interface Video {
   id: string;
