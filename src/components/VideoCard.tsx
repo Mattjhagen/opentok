@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { VideoPlayer } from './VideoPlayer';
 import { CommentsModal } from './CommentsModal';
-import { ShareModal } from './ShareModal';
+import { EnhancedShareModal } from './EnhancedShareModal';
 import { useVideoInteractions } from '@/hooks/useVideoInteractions';
 
 interface VideoCardProps {
@@ -201,11 +201,12 @@ export function VideoCard({
         onCommentCountUpdate={updateCommentCount}
       />
       
-      <ShareModal
+      <EnhancedShareModal
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         videoId={id}
         videoTitle={description}
+        videoUrl={videoSrc}
         shareCount={shareCount || shares}
         onShareCountUpdate={updateShareCount}
       />

@@ -1,16 +1,22 @@
 import { useState } from 'react';
-import { Search, Plus, Settings, Menu, LogOut, User } from 'lucide-react';
+import { Search, Plus, Settings, Menu, LogOut, User, MessageCircle, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { VideoUpload } from './VideoUpload';
+import { ChatSystem } from './ChatSystem';
+import { NotificationSystem, useNotificationCount } from './NotificationSystem';
 
 export function Header() {
   const { user, signOut } = useAuth();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const unreadCount = useNotificationCount();
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -73,6 +79,34 @@ export function Header() {
             <Plus className="w-4 h-4 mr-2" />
             Upload
           </Button>
+
+          {/* Chat Button */}
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setIsChatOpen(true)}
+            className="relative"
+          >
+            <MessageCircle className="w-5 h-5" />
+          </Button>
+
+          {/* Notifications Button */}
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setIsNotificationsOpen(true)}
+            className="relative"
+          >
+            <Bell className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Badge>
+            )}
+          </Button>
           
           <Button variant="ghost" size="sm">
             <Settings className="w-5 h-5" />
@@ -116,6 +150,18 @@ export function Header() {
       <VideoUpload 
         isOpen={isUploadOpen} 
         onClose={() => setIsUploadOpen(false)} 
+      />
+
+      {/* Chat System */}
+      <ChatSystem
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+      />
+
+      {/* Notification System */}
+      <NotificationSystem
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
       />
     </header>
   );
