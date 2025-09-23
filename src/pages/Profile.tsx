@@ -38,7 +38,7 @@ interface UserVideo {
 function Profile() {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, ensureProfile } = useAuth();
   const { toast } = useToast();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -51,6 +51,7 @@ function Profile() {
       fetchProfile();
     }
   }, [username, currentUser]);
+
 
   const fetchProfile = async () => {
     try {
@@ -69,7 +70,7 @@ function Profile() {
       if (profileError) {
         console.error('Profile fetch error:', profileError);
         
-        // If profile doesn't exist (404/406) and this is the current user, create it
+        // If profile doesn't exist and this is the current user, try to create it
         if ((profileError.code === 'PGRST116' || profileError.code === 'PGRST301' || profileError.status === 406) && currentUser) {
           console.log('Profile not found, checking if this is current user...');
           console.log('cleanUsername:', cleanUsername);
@@ -78,133 +79,42 @@ function Profile() {
           console.log('currentUser.id:', currentUser.id);
           
           // Check if this is the current user by comparing usernames or email
-          const isCurrentUser = cleanUsername === currentUser.user_metadata?.username || 
-                               cleanUsername === currentUser.email?.split('@')[0] ||
+          const currentUserUsername = currentUser.user_metadata?.username?.startsWith('@') 
+            ? currentUser.user_metadata.username.slice(1) 
+            : currentUser.user_metadata?.username;
+          const currentUserEmailPrefix = currentUser.email?.split('@')[0];
+          
+          const isCurrentUser = cleanUsername === currentUserUsername || 
+                               cleanUsername === currentUserEmailPrefix ||
                                cleanUsername === 'me' ||
                                cleanUsername === 'matty' ||
-                               cleanUsername === currentUser.id; // Also check by user ID
+                               cleanUsername === currentUser.id;
           
           console.log('isCurrentUser:', isCurrentUser);
           
           if (isCurrentUser) {
-            console.log('Creating profile for current user...');
+            console.log('This is the current user, ensuring profile exists...');
             
-            // First, let's check if the profiles table exists and what's in it
-            console.log('Checking profiles table...');
-            const { data: allProfiles, error: tableError } = await supabase
-              .from('profiles')
-              .select('*')
-              .limit(5);
-              
-            console.log('Profiles table check:', { allProfiles, tableError });
-            
-            // Check if there's already a profile for this user with @ symbol
-            const { data: profileWithAt, error: atError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('username', `@${cleanUsername}`)
-              .single();
-              
-            console.log('Profile with @ symbol check:', { profileWithAt, atError });
-            
-            // Check if a profile already exists for this user ID
-            const { data: existingProfile, error: checkError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', currentUser.id)
-              .single();
-              
-            if (existingProfile && !checkError) {
-              console.log('Profile already exists, using it:', existingProfile);
-              setProfile(existingProfile);
+            // Use the ensureProfile function from auth hook
+            const profile = await ensureProfile();
+            if (profile) {
+              setProfile(profile);
               setIsCurrentUser(true);
               
               // Redirect to the correct profile URL if needed
-              if (existingProfile.username !== cleanUsername) {
-                navigate(`/profile/${existingProfile.username}`, { replace: true });
-                return;
-              }
-              return;
-            }
-            
-            // Check if profile exists with @ symbol
-            if (profileWithAt && !atError) {
-              console.log('Profile exists with @ symbol, using it:', profileWithAt);
-              setProfile(profileWithAt);
-              setIsCurrentUser(true);
-              
-              // Redirect to the correct profile URL (without @)
-              navigate(`/profile/${cleanUsername}`, { replace: true });
-              return;
-            }
-            
-            // Create new profile
-            const rawUsername = currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user';
-            const cleanUsername = rawUsername.startsWith('@') ? rawUsername.slice(1) : rawUsername;
-            
-            const profileData = {
-              id: currentUser.id,
-              username: cleanUsername,
-              display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
-            };
-            
-            console.log('Attempting to create profile with data:', profileData);
-            
-            const { data: newProfile, error: createError } = await supabase
-              .from('profiles')
-              .insert(profileData)
-              .select()
-              .single();
-              
-            if (createError) {
-              console.error('Error creating profile:', createError);
-              
-              // If profile creation fails due to duplicate, try to fetch existing profile
-              if (createError.code === '23505') { // Unique constraint violation
-                console.log('Profile already exists, fetching it...');
-                const { data: existingProfile } = await supabase
-                  .from('profiles')
-                  .select('*')
-                  .eq('id', currentUser.id)
-                  .single();
-                  
-                if (existingProfile) {
-                  setProfile(existingProfile);
-                  setIsCurrentUser(true);
-                  return;
-                }
-              }
-              
-              // Try to fetch any existing profile by user ID
-              const { data: fallbackProfile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', currentUser.id)
-                .single();
-                
-              if (fallbackProfile) {
-                console.log('Found existing profile as fallback:', fallbackProfile);
-                setProfile(fallbackProfile);
-                setIsCurrentUser(true);
+              if (profile.username !== cleanUsername) {
+                navigate(`/profile/${profile.username}`, { replace: true });
                 return;
               }
               
-              console.error('Failed to create or find profile:', createError);
-              throw createError;
-            }
-            
-            console.log('Profile created successfully:', newProfile);
-            setProfile(newProfile);
-            setIsCurrentUser(true);
-            
-            // Redirect to the correct profile URL
-            const correctUsername = newProfile.username;
-            if (correctUsername !== cleanUsername) {
-              navigate(`/profile/${correctUsername}`, { replace: true });
+              // Fetch videos for this profile
+              fetchVideos(profile.id);
+              return;
+            } else {
+              console.error('Failed to create or find profile for current user');
+              setError('Failed to create profile. Please try again.');
               return;
             }
-            
-            return; // Skip video fetching for now
           }
         }
         
@@ -212,71 +122,25 @@ function Profile() {
         if (currentUser) {
           console.log('Attempting to create or find profile for authenticated user...');
           
-          // Try to find existing profile by user ID
-          const { data: existingProfile, error: findError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-            
-          if (existingProfile && !findError) {
-            console.log('Found existing profile:', existingProfile);
-            setProfile(existingProfile);
+          // Use the ensureProfile function from auth hook
+          const profile = await ensureProfile();
+          if (profile) {
+            setProfile(profile);
             setIsCurrentUser(true);
             
-            // Redirect to the correct profile URL
-            if (existingProfile.username !== cleanUsername) {
-              navigate(`/profile/${existingProfile.username}`, { replace: true });
+            // Redirect to the correct profile URL if needed
+            if (profile.username !== cleanUsername) {
+              navigate(`/profile/${profile.username}`, { replace: true });
               return;
             }
-            return;
-          }
-          
-          // Create a new profile
-          console.log('Creating new profile for user...');
-          const rawUsername = currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user';
-          const cleanUsername = rawUsername.startsWith('@') ? rawUsername.slice(1) : rawUsername;
-          
-          const profileData = {
-            id: currentUser.id,
-            username: cleanUsername,
-            display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
-          };
-          
-          console.log('Creating profile with data:', profileData);
-          
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert(profileData)
-            .select()
-            .single();
             
-          if (newProfile && !createError) {
-            console.log('Profile created successfully:', newProfile);
-            setProfile(newProfile);
-            setIsCurrentUser(true);
-            
-            // Redirect to the correct profile URL
-            if (newProfile.username !== cleanUsername) {
-              navigate(`/profile/${newProfile.username}`, { replace: true });
-              return;
-            }
+            // Fetch videos for this profile
+            fetchVideos(profile.id);
             return;
-          } else if (createError) {
-            console.error('Failed to create profile in fallback:', createError);
-            // If creation fails, try one more time to find existing profile
-            const { data: finalProfile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', currentUser.id)
-              .single();
-              
-            if (finalProfile) {
-              console.log('Found profile in final attempt:', finalProfile);
-              setProfile(finalProfile);
-              setIsCurrentUser(true);
-              return;
-            }
+          } else {
+            console.error('Failed to create or find profile for authenticated user');
+            setError('Failed to load profile. Please try again.');
+            return;
           }
         }
         

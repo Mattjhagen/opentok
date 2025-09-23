@@ -7,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  ensureProfile: () => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,11 +44,59 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const ensureProfile = async () => {
+    if (!user) return null;
+    
+    try {
+      // First check if profile exists
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+        
+      if (existingProfile && !checkError) {
+        console.log('Profile already exists:', existingProfile);
+        return existingProfile;
+      }
+      
+      // Create profile if it doesn't exist
+      const rawUsername = user.user_metadata?.username || user.email?.split('@')[0] || 'user';
+      const cleanUsername = rawUsername.startsWith('@') ? rawUsername.slice(1) : rawUsername;
+      
+      const profileData = {
+        id: user.id,
+        username: cleanUsername,
+        display_name: user.user_metadata?.display_name || user.email?.split('@')[0] || 'User',
+      };
+      
+      console.log('Creating missing profile:', profileData);
+      
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert(profileData)
+        .select()
+        .single();
+        
+      if (createError) {
+        console.error('Failed to create profile:', createError);
+        return null;
+      }
+      
+      console.log('Profile created successfully:', newProfile);
+      return newProfile;
+    } catch (error) {
+      console.error('Error in ensureProfile:', error);
+      return null;
+    }
+  };
+
   const value = {
     user,
     session,
     loading,
     signOut,
+    ensureProfile,
   };
 
   return (
