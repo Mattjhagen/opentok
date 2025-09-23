@@ -89,7 +89,16 @@ function Profile() {
           if (isCurrentUser) {
             console.log('Creating profile for current user...');
             
-            // First, check if a profile already exists for this user ID
+            // First, let's check if the profiles table exists and what's in it
+            console.log('Checking profiles table...');
+            const { data: allProfiles, error: tableError } = await supabase
+              .from('profiles')
+              .select('*')
+              .limit(5);
+              
+            console.log('Profiles table check:', { allProfiles, tableError });
+            
+            // Check if a profile already exists for this user ID
             const { data: existingProfile, error: checkError } = await supabase
               .from('profiles')
               .select('*')
@@ -110,9 +119,12 @@ function Profile() {
             }
             
             // Create new profile
+            const rawUsername = currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user';
+            const cleanUsername = rawUsername.startsWith('@') ? rawUsername.slice(1) : rawUsername;
+            
             const profileData = {
               id: currentUser.id,
-              username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user',
+              username: cleanUsername,
               display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
             };
             
@@ -202,9 +214,12 @@ function Profile() {
           
           // Create a new profile
           console.log('Creating new profile for user...');
+          const rawUsername = currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user';
+          const cleanUsername = rawUsername.startsWith('@') ? rawUsername.slice(1) : rawUsername;
+          
           const profileData = {
             id: currentUser.id,
-            username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user',
+            username: cleanUsername,
             display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
           };
           
