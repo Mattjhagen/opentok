@@ -24,7 +24,18 @@ export function VideoPlayer({
   const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [isMuted, setIsMuted] = useState(muted);
   const [showControls, setShowControls] = useState(false);
-  const { currentPlayingVideo, setCurrentPlayingVideo } = useVideoContext();
+  
+  // Safely get video context with fallback
+  let currentPlayingVideo: string | null = null;
+  let setCurrentPlayingVideo: (videoId: string | null) => void = () => {};
+  
+  try {
+    const context = useVideoContext();
+    currentPlayingVideo = context.currentPlayingVideo;
+    setCurrentPlayingVideo = context.setCurrentPlayingVideo;
+  } catch (error) {
+    console.warn('VideoContext not available, using fallback:', error);
+  }
 
   useEffect(() => {
     const video = videoRef.current;

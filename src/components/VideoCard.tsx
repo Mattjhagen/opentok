@@ -116,6 +116,7 @@ export function VideoCard({
         autoPlay={isVisible}
         muted={!isVisible}
         loop={true}
+        videoId={id}
       />
 
       {/* Content Overlay */}
