@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Share2, Copy, ExternalLink, Video, Heart, MessageCircle, Share, Bookmark } from 'lucide-react';
+import { ArrowLeft, Share2, Copy, ExternalLink, Video, Heart, MessageCircle, Share, Bookmark, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -44,7 +44,9 @@ function Profile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [videos, setVideos] = useState<UserVideo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isCurrentUser, setIsCurrentUser] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (username) {
@@ -53,9 +55,17 @@ function Profile() {
   }, [username, currentUser]);
 
 
+  const retryProfileCreation = async () => {
+    console.log('Retrying profile creation...');
+    setRetryCount(prev => prev + 1);
+    setError(null);
+    await fetchProfile();
+  };
+
   const fetchProfile = async () => {
     try {
       setLoading(true);
+      setError(null);
       
       // Clean username (remove @ if present)
       const cleanUsername = username?.startsWith('@') ? username.slice(1) : username;
@@ -112,7 +122,7 @@ function Profile() {
               return;
             } else {
               console.error('Failed to create or find profile for current user');
-              setError('Failed to create profile. Please try again.');
+              setError('Failed to create profile. Please try refreshing the page or contact support.');
               return;
             }
           }
@@ -139,7 +149,7 @@ function Profile() {
             return;
           } else {
             console.error('Failed to create or find profile for authenticated user');
-            setError('Failed to load profile. Please try again.');
+            setError('Failed to load profile. Please try refreshing the page or contact support.');
             return;
           }
         }
@@ -257,15 +267,42 @@ function Profile() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto p-6">
           <h2 className="text-2xl font-bold mb-2">Profile not found</h2>
           <p className="text-muted-foreground mb-4">
-            The user you're looking for doesn't exist.
+            {error || "The user you're looking for doesn't exist."}
           </p>
-          <Button onClick={() => navigate('/')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Go Home
-          </Button>
+          
+          {/* Show retry button if this is the current user and we have an error */}
+          {currentUser && error && retryCount < 3 && (
+            <div className="mb-4">
+              <Button 
+                onClick={retryProfileCreation}
+                variant="outline"
+                className="mr-2"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry ({retryCount}/3)
+              </Button>
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <Button onClick={() => navigate('/')} className="w-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Go Home
+            </Button>
+            
+            {currentUser && (
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/?action=upload')} 
+                className="w-full"
+              >
+                Upload Video
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );
