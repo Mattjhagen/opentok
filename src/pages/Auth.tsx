@@ -28,8 +28,23 @@ const Auth = () => {
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Auth component - checking session:', { 
+        hasUser: !!session?.user, 
+        currentPath: window.location.pathname,
+        currentUrl: window.location.href 
+      });
+      
       if (session?.user) {
-        navigate('/');
+        // Don't redirect if we're on a password reset page or if there are URL parameters
+        const currentPath = window.location.pathname;
+        const hasUrlParams = window.location.search.length > 0;
+        
+        if (currentPath !== '/reset-password' && !hasUrlParams) {
+          console.log('Redirecting authenticated user to home page');
+          navigate('/');
+        } else {
+          console.log('Not redirecting - on reset password page or has URL params');
+        }
       }
     };
     checkUser();

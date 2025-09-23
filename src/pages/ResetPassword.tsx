@@ -19,12 +19,45 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Debug: Log the current URL and parameters
+  console.log('ResetPassword component loaded');
+  console.log('Current URL:', window.location.href);
+  console.log('Current pathname:', window.location.pathname);
+
   useEffect(() => {
     // Check if we have the necessary tokens in the URL
+    // Supabase password reset links typically use these parameters
     const accessToken = searchParams.get('access_token');
     const refreshToken = searchParams.get('refresh_token');
+    const type = searchParams.get('type');
     
-    if (!accessToken || !refreshToken) {
+    console.log('Reset password URL parameters:', {
+      accessToken,
+      refreshToken,
+      type,
+      allParams: Object.fromEntries(searchParams.entries())
+    });
+    
+    // Check if this is a password recovery request
+    if (type === 'recovery' && accessToken && refreshToken) {
+      // Set the session with the tokens from the URL
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      }).then(({ error }) => {
+        if (error) {
+          console.error('Error setting session:', error);
+          toast({
+            title: "Invalid reset link",
+            description: "This password reset link is invalid or has expired.",
+            variant: "destructive",
+          });
+          navigate('/auth');
+        } else {
+          console.log('Session set successfully for password reset');
+        }
+      });
+    } else if (!accessToken || !refreshToken) {
       toast({
         title: "Invalid reset link",
         description: "This password reset link is invalid or has expired.",
