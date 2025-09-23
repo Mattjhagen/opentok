@@ -75,15 +75,41 @@ function Profile() {
           console.log('cleanUsername:', cleanUsername);
           console.log('currentUser.user_metadata?.username:', currentUser.user_metadata?.username);
           console.log('currentUser.email:', currentUser.email);
+          console.log('currentUser.id:', currentUser.id);
           
           // Check if this is the current user by comparing usernames or email
           const isCurrentUser = cleanUsername === currentUser.user_metadata?.username || 
                                cleanUsername === currentUser.email?.split('@')[0] ||
                                cleanUsername === 'me' ||
-                               cleanUsername === 'matty';
+                               cleanUsername === 'matty' ||
+                               cleanUsername === currentUser.id; // Also check by user ID
+          
+          console.log('isCurrentUser:', isCurrentUser);
           
           if (isCurrentUser) {
             console.log('Creating profile for current user...');
+            
+            // First, check if a profile already exists for this user ID
+            const { data: existingProfile, error: checkError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentUser.id)
+              .single();
+              
+            if (existingProfile && !checkError) {
+              console.log('Profile already exists, using it:', existingProfile);
+              setProfile(existingProfile);
+              setIsCurrentUser(true);
+              
+              // Redirect to the correct profile URL if needed
+              if (existingProfile.username !== cleanUsername) {
+                navigate(`/profile/${existingProfile.username}`, { replace: true });
+                return;
+              }
+              return;
+            }
+            
+            // Create new profile
             const { data: newProfile, error: createError } = await supabase
               .from('profiles')
               .insert({
@@ -96,9 +122,22 @@ function Profile() {
               
             if (createError) {
               console.error('Error creating profile:', createError);
+              // If profile creation fails, try to fetch any existing profile
+              const { data: fallbackProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+                
+              if (fallbackProfile) {
+                setProfile(fallbackProfile);
+                setIsCurrentUser(true);
+                return;
+              }
               throw createError;
             }
             
+            console.log('Profile created successfully:', newProfile);
             setProfile(newProfile);
             setIsCurrentUser(true);
             
@@ -110,6 +149,56 @@ function Profile() {
             }
             
             return; // Skip video fetching for now
+          }
+        }
+        
+        // If we get here and the user is authenticated, try to create/find their profile
+        if (currentUser) {
+          console.log('Attempting to create or find profile for authenticated user...');
+          
+          // Try to find existing profile by user ID
+          const { data: existingProfile, error: findError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+            
+          if (existingProfile && !findError) {
+            console.log('Found existing profile:', existingProfile);
+            setProfile(existingProfile);
+            setIsCurrentUser(true);
+            
+            // Redirect to the correct profile URL
+            if (existingProfile.username !== cleanUsername) {
+              navigate(`/profile/${existingProfile.username}`, { replace: true });
+              return;
+            }
+            return;
+          }
+          
+          // Create a new profile
+          console.log('Creating new profile for user...');
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: currentUser.id,
+              username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user',
+              display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
+            })
+            .select()
+            .single();
+            
+          if (newProfile && !createError) {
+            console.log('Profile created successfully:', newProfile);
+            setProfile(newProfile);
+            setIsCurrentUser(true);
+            
+            // Redirect to the correct profile URL
+            if (newProfile.username !== cleanUsername) {
+              navigate(`/profile/${newProfile.username}`, { replace: true });
+              return;
+            }
+            return;
           }
         }
         
