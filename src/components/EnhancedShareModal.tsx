@@ -52,6 +52,15 @@ export function EnhancedShareModal({
       return;
     }
 
+    if (!videoId || !videoTitle) {
+      toast({
+        title: "Cannot Share",
+        description: "Video information is missing. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       await navigator.share({
         title: videoTitle,

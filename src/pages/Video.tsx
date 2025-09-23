@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useVideoInteractions } from '@/hooks/useVideoInteractions';
 import { EnhancedShareModal } from '@/components/EnhancedShareModal';
+import { checkIfVideosExist } from '@/utils/videoUtils';
 
 interface Video {
   id: string;
@@ -34,6 +35,7 @@ function Video() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [videosExist, setVideosExist] = useState<boolean | null>(null);
 
   const {
     isLiked,
@@ -78,7 +80,15 @@ function Video() {
         
         // Check if it's a "not found" error
         if (fetchError.code === 'PGRST116') {
-          setError('Video not found - this video may have been deleted or the link is invalid');
+          // Check if any videos exist in the database
+          const videosExist = await checkIfVideosExist();
+          setVideosExist(videosExist);
+          
+          if (!videosExist) {
+            setError('No videos have been uploaded yet. Be the first to upload a video!');
+          } else {
+            setError('Video not found - this video may have been deleted or the link is invalid');
+          }
         } else {
           setError('Failed to load video');
         }
@@ -128,10 +138,19 @@ function Video() {
             The video you're looking for doesn't exist or has been removed.
           </p>
           <p className="text-sm text-muted-foreground mb-6">
-            This might happen if:
-            <br />• The video was deleted
-            <br />• The link is incorrect
-            <br />• No videos have been uploaded yet
+            {videosExist === false ? (
+              <>
+                No videos have been uploaded to the platform yet.
+                <br />Be the first to share a video with the community!
+              </>
+            ) : (
+              <>
+                This might happen if:
+                <br />• The video was deleted
+                <br />• The link is incorrect
+                <br />• The video ID is invalid
+              </>
+            )}
           </p>
           <div className="space-y-3">
             <Button onClick={() => navigate('/')} className="w-full">
@@ -139,7 +158,7 @@ function Video() {
               Go Home
             </Button>
             <Button variant="outline" onClick={() => navigate('/?action=upload')} className="w-full">
-              Upload Video
+              {videosExist === false ? 'Upload First Video' : 'Upload Video'}
             </Button>
           </div>
         </div>
