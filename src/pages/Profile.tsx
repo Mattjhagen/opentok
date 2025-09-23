@@ -70,15 +70,29 @@ function Profile() {
 
   const fetchVideos = async (userId: string) => {
     try {
-      console.log('Fetching videos for user ID:', userId);
+      console.log('=== FETCHING VIDEOS ===');
+      console.log('User ID:', userId);
+      console.log('Current user ID:', currentUser?.id);
       
+      // First, let's check all videos in the database to see what's there
+      const { data: allVideos, error: allVideosError } = await supabase
+        .from('videos')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      console.log('=== ALL VIDEOS IN DATABASE ===');
+      console.log('All videos:', allVideos);
+      console.log('Total videos in database:', allVideos?.length || 0);
+      
+      // Now fetch videos for this specific user
       const { data: videosData, error: videosError } = await supabase
         .from('videos')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      console.log('Videos fetch result:', { videosData, videosError });
+      console.log('Videos fetch result for user:', { videosData, videosError });
+      console.log('Number of videos found for user:', videosData?.length || 0);
 
       if (videosError) {
         console.error('Error fetching videos:', videosError);
@@ -98,6 +112,7 @@ function Profile() {
       })) || [];
 
       console.log('Transformed videos:', transformedVideos);
+      console.log('Setting videos state with:', transformedVideos.length, 'videos');
       setVideos(transformedVideos);
       return transformedVideos;
     } catch (error) {
@@ -210,37 +225,8 @@ function Profile() {
       // Check if this is the current user's profile
       setIsCurrentUser(currentUser?.id === profileData.id);
 
-      // Fetch user's videos
-      console.log('Fetching videos for user ID:', profileData.id);
-      
-      const { data: videosData, error: videosError } = await supabase
-        .from('videos')
-        .select('*')
-        .eq('user_id', profileData.id)
-        .order('created_at', { ascending: false });
-
-      console.log('Videos fetch result:', { videosData, videosError });
-
-      if (videosError) {
-        console.error('Error fetching videos:', videosError);
-        throw videosError;
-      }
-
-      const transformedVideos = videosData?.map((video: any) => ({
-        id: video.id,
-        title: video.title,
-        description: video.description,
-        video_url: video.video_url,
-        thumbnail_url: video.thumbnail_url,
-        created_at: video.created_at,
-        likes: 0, // Will be fetched separately if needed
-        comments: 0, // Will be fetched separately if needed
-        shares: 0, // Will be fetched separately if needed
-      })) || [];
-
-      console.log('Transformed videos:', transformedVideos);
-
-      setVideos(transformedVideos);
+      // Fetch user's videos using the dedicated function
+      await fetchVideos(profileData.id);
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({
