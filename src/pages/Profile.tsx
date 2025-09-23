@@ -50,7 +50,7 @@ function Profile() {
     if (username) {
       fetchProfile();
     }
-  }, [username]);
+  }, [username, currentUser]);
 
   const fetchProfile = async () => {
     try {
@@ -70,26 +70,47 @@ function Profile() {
         console.error('Profile fetch error:', profileError);
         
         // If profile doesn't exist and this is the current user, create it
-        if (profileError.code === 'PGRST116' && currentUser && cleanUsername === currentUser.user_metadata?.username) {
-          console.log('Creating profile for current user...');
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert({
-              id: currentUser.id,
-              username: cleanUsername,
-              display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
-            })
-            .select()
-            .single();
-            
-          if (createError) {
-            console.error('Error creating profile:', createError);
-            throw createError;
-          }
+        if (profileError.code === 'PGRST116' && currentUser) {
+          console.log('Profile not found, checking if this is current user...');
+          console.log('cleanUsername:', cleanUsername);
+          console.log('currentUser.user_metadata?.username:', currentUser.user_metadata?.username);
+          console.log('currentUser.email:', currentUser.email);
           
-          setProfile(newProfile);
-          setIsCurrentUser(true);
-          return; // Skip video fetching for now
+          // Check if this is the current user by comparing usernames or email
+          const isCurrentUser = cleanUsername === currentUser.user_metadata?.username || 
+                               cleanUsername === currentUser.email?.split('@')[0] ||
+                               cleanUsername === 'me' ||
+                               cleanUsername === 'matty';
+          
+          if (isCurrentUser) {
+            console.log('Creating profile for current user...');
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert({
+                id: currentUser.id,
+                username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user',
+                display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
+              })
+              .select()
+              .single();
+              
+            if (createError) {
+              console.error('Error creating profile:', createError);
+              throw createError;
+            }
+            
+            setProfile(newProfile);
+            setIsCurrentUser(true);
+            
+            // Redirect to the correct profile URL
+            const correctUsername = newProfile.username;
+            if (correctUsername !== cleanUsername) {
+              navigate(`/profile/${correctUsername}`, { replace: true });
+              return;
+            }
+            
+            return; // Skip video fetching for now
+          }
         }
         
         throw profileError;
