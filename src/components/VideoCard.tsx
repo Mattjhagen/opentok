@@ -6,6 +6,8 @@ import { VideoPlayer } from './VideoPlayer';
 import { CommentsModal } from './CommentsModal';
 import { EnhancedShareModal } from './EnhancedShareModal';
 import { useVideoInteractions } from '@/hooks/useVideoInteractions';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 interface VideoCardProps {
   id: string;
@@ -49,6 +51,8 @@ export function VideoCard({
   const [shares, setShares] = useState(initialShares);
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   
   const {
     isLiked,
@@ -65,6 +69,28 @@ export function VideoCard({
     onCommentCountUpdate: (count) => setComments(count),
     onShareCountUpdate: (count) => setShares(count)
   });
+
+  // Handle profile navigation
+  const handleProfileClick = () => {
+    const cleanUsername = user.username.startsWith('@') ? user.username.slice(1) : user.username;
+    navigate(`/profile/${cleanUsername}`);
+  };
+
+  // Handle messaging
+  const handleMessageClick = () => {
+    if (!currentUser) {
+      navigate('/auth');
+      return;
+    }
+    
+    if (currentUser.id === user.id) {
+      // Can't message yourself
+      return;
+    }
+    
+    // Navigate to chat with this user
+    navigate(`/chat/${user.id}`);
+  };
 
   // Intersection Observer to detect when video is visible
   useEffect(() => {
@@ -112,25 +138,43 @@ export function VideoCard({
           <div className="space-y-3">
             {/* User info */}
             <div className="flex items-center gap-3">
-              <Avatar className="w-12 h-12 ring-2 ring-primary/20">
-                <AvatarImage src={user.avatar} />
-                <AvatarFallback className="bg-gradient-primary text-white font-medium">
-                  {user.displayName.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-foreground">{user.displayName}</h3>
-                  {user.verified && (
-                    <div className="w-4 h-4 bg-gradient-primary rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
-                  )}
+              <button 
+                onClick={handleProfileClick}
+                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              >
+                <Avatar className="w-12 h-12 ring-2 ring-primary/20">
+                  <AvatarImage src={user.avatar} />
+                  <AvatarFallback className="bg-gradient-primary text-white font-medium">
+                    {user.displayName.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-left">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-foreground">{user.displayName}</h3>
+                    {user.verified && (
+                      <div className="w-4 h-4 bg-gradient-primary rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">✓</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {user.username.startsWith('@') ? user.username : `@${user.username}`}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {user.username.startsWith('@') ? user.username : `@${user.username}`}
-                </p>
-              </div>
+              </button>
+              
+              {/* Message button - only show if not current user */}
+              {currentUser && currentUser.id !== user.id && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMessageClick}
+                  className="ml-auto bg-transparent border-primary/20 text-primary hover:bg-primary/10"
+                >
+                  <MessageCircle className="w-4 h-4 mr-1" />
+                  Message
+                </Button>
+              )}
             </div>
 
             {/* Description */}
