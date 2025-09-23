@@ -69,8 +69,8 @@ function Profile() {
       if (profileError) {
         console.error('Profile fetch error:', profileError);
         
-        // If profile doesn't exist and this is the current user, create it
-        if (profileError.code === 'PGRST116' && currentUser) {
+        // If profile doesn't exist (404/406) and this is the current user, create it
+        if ((profileError.code === 'PGRST116' || profileError.code === 'PGRST301' || profileError.status === 406) && currentUser) {
           console.log('Profile not found, checking if this is current user...');
           console.log('cleanUsername:', cleanUsername);
           console.log('currentUser.user_metadata?.username:', currentUser.user_metadata?.username);
@@ -110,19 +110,40 @@ function Profile() {
             }
             
             // Create new profile
+            const profileData = {
+              id: currentUser.id,
+              username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user',
+              display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
+            };
+            
+            console.log('Attempting to create profile with data:', profileData);
+            
             const { data: newProfile, error: createError } = await supabase
               .from('profiles')
-              .insert({
-                id: currentUser.id,
-                username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user',
-                display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
-              })
+              .insert(profileData)
               .select()
               .single();
               
             if (createError) {
               console.error('Error creating profile:', createError);
-              // If profile creation fails, try to fetch any existing profile
+              
+              // If profile creation fails due to duplicate, try to fetch existing profile
+              if (createError.code === '23505') { // Unique constraint violation
+                console.log('Profile already exists, fetching it...');
+                const { data: existingProfile } = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', currentUser.id)
+                  .single();
+                  
+                if (existingProfile) {
+                  setProfile(existingProfile);
+                  setIsCurrentUser(true);
+                  return;
+                }
+              }
+              
+              // Try to fetch any existing profile by user ID
               const { data: fallbackProfile } = await supabase
                 .from('profiles')
                 .select('*')
@@ -130,10 +151,13 @@ function Profile() {
                 .single();
                 
               if (fallbackProfile) {
+                console.log('Found existing profile as fallback:', fallbackProfile);
                 setProfile(fallbackProfile);
                 setIsCurrentUser(true);
                 return;
               }
+              
+              console.error('Failed to create or find profile:', createError);
               throw createError;
             }
             
@@ -178,13 +202,17 @@ function Profile() {
           
           // Create a new profile
           console.log('Creating new profile for user...');
+          const profileData = {
+            id: currentUser.id,
+            username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user',
+            display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
+          };
+          
+          console.log('Creating profile with data:', profileData);
+          
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
-            .insert({
-              id: currentUser.id,
-              username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'user',
-              display_name: currentUser.user_metadata?.display_name || currentUser.email?.split('@')[0] || 'User',
-            })
+            .insert(profileData)
             .select()
             .single();
             
@@ -199,6 +227,21 @@ function Profile() {
               return;
             }
             return;
+          } else if (createError) {
+            console.error('Failed to create profile in fallback:', createError);
+            // If creation fails, try one more time to find existing profile
+            const { data: finalProfile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentUser.id)
+              .single();
+              
+            if (finalProfile) {
+              console.log('Found profile in final attempt:', finalProfile);
+              setProfile(finalProfile);
+              setIsCurrentUser(true);
+              return;
+            }
           }
         }
         
