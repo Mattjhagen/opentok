@@ -52,7 +52,10 @@ export function EnhancedShareModal({
       return;
     }
 
+    console.log('Native share - videoId:', videoId, 'videoTitle:', videoTitle, 'fullShareUrl:', fullShareUrl);
+
     if (!videoId || !videoTitle) {
+      console.error('Missing video information for sharing:', { videoId, videoTitle });
       toast({
         title: "Cannot Share",
         description: "Video information is missing. Please try again.",

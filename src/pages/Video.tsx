@@ -59,6 +59,8 @@ function Video() {
       setError(null);
 
       console.log('Fetching video with ID:', videoId);
+      console.log('Current URL:', window.location.href);
+      console.log('Video ID from URL params:', videoId);
 
       const { data, error: fetchError } = await supabase
         .from('videos')
@@ -74,6 +76,13 @@ function Video() {
         .single();
 
       console.log('Video fetch result:', { data, error: fetchError });
+      console.log('Video data details:', {
+        id: data?.id,
+        title: data?.title,
+        video_url: data?.video_url,
+        user_id: data?.user_id,
+        profiles: data?.profiles
+      });
 
       if (fetchError) {
         console.error('Error fetching video:', fetchError);
@@ -98,6 +107,28 @@ function Video() {
       if (!data) {
         console.log('No video data returned');
         setError('Video not found');
+        return;
+      }
+
+      // Validate video URL
+      if (!data.video_url || data.video_url.includes('NULL') || !data.video_url.startsWith('http')) {
+        console.error('Invalid video URL:', data.video_url);
+        setError('Video file is corrupted or missing. Please contact the uploader.');
+        return;
+      }
+
+      // Test if video URL is accessible
+      try {
+        const response = await fetch(data.video_url, { method: 'HEAD' });
+        if (!response.ok) {
+          console.error('Video URL not accessible:', response.status, response.statusText);
+          setError('Video file is not accessible. It may have been deleted or moved.');
+          return;
+        }
+        console.log('Video URL is accessible:', data.video_url);
+      } catch (urlError) {
+        console.error('Error testing video URL:', urlError);
+        setError('Video file is not accessible. Please check your internet connection.');
         return;
       }
 
@@ -146,9 +177,12 @@ function Video() {
             ) : (
               <>
                 This might happen if:
-                <br />• The video was deleted
-                <br />• The link is incorrect
+                <br />• The video was deleted or moved
+                <br />• The link is incorrect or expired
                 <br />• The video ID is invalid
+                <br />• The video file is corrupted
+                <br />
+                <br />Try refreshing the page or check the console for more details.
               </>
             )}
           </p>
@@ -310,11 +344,14 @@ function Video() {
         <EnhancedShareModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          title={video.title}
-          description={video.description}
-          url={`${window.location.origin}/video/${video.id}`}
+          videoId={video.id}
+          videoTitle={video.title}
           videoUrl={video.video_url}
-          thumbnailUrl={video.thumbnail_url}
+          shareCount={shareCount}
+          onShareCountUpdate={(count) => {
+            // Update share count if needed
+            console.log('Share count updated:', count);
+          }}
         />
       )}
     </div>
