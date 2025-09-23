@@ -74,6 +74,13 @@ export function VideoCard({
     e.stopPropagation();
     
     console.log('Profile click triggered for user:', user);
+    
+    // Add safety checks for user data
+    if (!user || !user.username) {
+      console.error('User data is missing or invalid:', user);
+      return;
+    }
+    
     const cleanUsername = user.username.startsWith('@') ? user.username.slice(1) : user.username;
     console.log('Navigating to profile:', `/profile/${cleanUsername}`);
     navigate(`/profile/${cleanUsername}`);
@@ -129,25 +136,27 @@ export function VideoCard({
               <button 
                 onClick={handleProfileClick}
                 className="flex items-center gap-3 hover:opacity-80 transition-all duration-200 hover:scale-105 cursor-pointer p-1 rounded-lg hover:bg-white/5"
-                title={`View ${user.displayName}'s profile`}
+                title={`View ${user?.displayName || 'Unknown User'}'s profile`}
               >
                 <Avatar className="w-12 h-12 ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
-                  <AvatarImage src={user.avatar} />
+                  <AvatarImage src={user?.avatar} />
                   <AvatarFallback className="bg-gradient-primary text-white font-medium">
-                    {user.displayName.slice(0, 2).toUpperCase()}
+                    {(user?.displayName || 'U').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-left">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-foreground hover:text-primary transition-colors">{user.displayName}</h3>
-                    {user.verified && (
+                    <h3 className="font-semibold text-foreground hover:text-primary transition-colors">
+                      {user?.displayName || 'Unknown User'}
+                    </h3>
+                    {user?.verified && (
                       <div className="w-4 h-4 bg-gradient-primary rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground hover:text-primary/80 transition-colors">
-                    {user.username.startsWith('@') ? user.username : `@${user.username}`}
+                    {user?.username ? (user.username.startsWith('@') ? user.username : `@${user.username}`) : '@unknown'}
                   </p>
                 </div>
               </button>

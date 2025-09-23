@@ -52,13 +52,8 @@ const Index = () => {
       
       {/* Main Content */}
       <main className="pt-16 relative">
-        {/* Video Feed - Temporarily disabled for debugging */}
-        <div className="text-center p-8">
-          <h1 className="text-2xl font-bold mb-4">Welcome to OpenTok!</h1>
-          <p className="text-muted-foreground mb-4">User: {user.email}</p>
-          <p className="text-muted-foreground">Video feed temporarily disabled for debugging</p>
-        </div>
-        {/* <VideoFeed /> */}
+        {/* Video Feed */}
+        <VideoFeed />
         
         {/* Floating Algorithm Button */}
         <Button
