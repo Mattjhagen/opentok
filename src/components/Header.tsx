@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Settings, Menu, LogOut, User, MessageCircle, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import { SettingsModal } from './SettingsModal';
 
 export function Header() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -132,7 +134,10 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="flex items-center gap-2">
+              <DropdownMenuItem 
+                className="flex items-center gap-2"
+                onClick={() => navigate(`/profile/${user?.user_metadata?.username || 'me'}`)}
+              >
                 <User className="w-4 h-4" />
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">
