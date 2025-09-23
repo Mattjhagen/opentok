@@ -31,7 +31,9 @@ const Auth = () => {
       console.log('Auth component - checking session:', { 
         hasUser: !!session?.user, 
         currentPath: window.location.pathname,
-        currentUrl: window.location.href 
+        currentUrl: window.location.href,
+        searchParams: window.location.search,
+        hash: window.location.hash
       });
       
       if (session?.user) {
@@ -272,11 +274,22 @@ const Auth = () => {
                   setShowPasswordRecovery(true);
                 }}
                 className="text-sm text-primary hover:text-primary/80 transition-colors underline font-medium"
+                style={{ 
+                  color: '#8b5cf6', 
+                  textDecoration: 'underline',
+                  fontWeight: '500',
+                  fontSize: '14px'
+                }}
               >
                 Forgot your password?
               </button>
             </div>
           )}
+          
+          {/* Debug info */}
+          <div className="mt-2 text-center text-xs text-gray-500">
+            Debug: isLogin = {isLogin.toString()}
+          </div>
           
           <div className="mt-6 text-center">
             <button

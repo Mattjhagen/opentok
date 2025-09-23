@@ -20,9 +20,11 @@ export default function ResetPassword() {
   const { toast } = useToast();
 
   // Debug: Log the current URL and parameters
-  console.log('ResetPassword component loaded');
+  console.log('=== RESET PASSWORD PAGE LOADED ===');
   console.log('Current URL:', window.location.href);
   console.log('Current pathname:', window.location.pathname);
+  console.log('Current search params:', window.location.search);
+  console.log('Current hash:', window.location.hash);
 
   useEffect(() => {
     // Check if we have the necessary tokens in the URL

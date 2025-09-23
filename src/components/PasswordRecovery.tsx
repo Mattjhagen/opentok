@@ -25,8 +25,12 @@ export function PasswordRecovery({ isOpen, onClose, onBackToLogin }: PasswordRec
     setLoading(true);
 
     try {
+      const redirectUrl = `${window.location.origin}/reset-password`;
+      console.log('Password reset redirect URL:', redirectUrl);
+      console.log('Current origin:', window.location.origin);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectUrl,
       });
 
       if (error) {
