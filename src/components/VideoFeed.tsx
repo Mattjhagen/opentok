@@ -35,6 +35,8 @@ export function VideoFeed() {
   const fetchVideos = async () => {
     try {
       setLoading(true);
+      console.log('Starting to fetch videos...');
+      
       const { data, error } = await supabase
         .from('videos')
         .select(`
@@ -44,32 +46,43 @@ export function VideoFeed() {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       console.log('Fetched videos from database:', data);
       console.log('Number of videos found:', data?.length || 0);
 
-      // Transform the data to match VideoCard interface
-      const transformedVideos = data?.map((video: any) => ({
-        id: video.id,
-        videoSrc: video.video_url,
-        user: {
-          id: video.user_id,
-          username: video.profiles?.username || 'unknown',
-          displayName: video.profiles?.display_name || 'Unknown User',
-          avatar: video.profiles?.avatar_url,
-          verified: false, // You can add verification logic later
-        },
-        description: video.description || video.title,
-        likes: 0, // Will be fetched separately
-        comments: 0, // Will be fetched separately
-        shares: 0, // Will be fetched separately
-        isLiked: false, // Will be checked separately
-        isBookmarked: false, // You can add bookmarking logic later
-        algorithmScore: Math.random() * 0.3 + 0.7, // Mock algorithm score
-        algorithmFactors: ['Recent upload', 'User engagement', 'Content quality'],
-      })) || [];
+      // Safely transform the data to match VideoCard interface
+      const transformedVideos = (data || []).map((video: any) => {
+        try {
+          return {
+            id: video.id || 'unknown',
+            videoSrc: video.video_url || '',
+            user: {
+              id: video.user_id || 'unknown',
+              username: video.profiles?.username || 'unknown',
+              displayName: video.profiles?.display_name || 'Unknown User',
+              avatar: video.profiles?.avatar_url || null,
+              verified: false,
+            },
+            description: video.description || video.title || 'No description',
+            likes: 0,
+            comments: 0,
+            shares: 0,
+            isLiked: false,
+            isBookmarked: false,
+            algorithmScore: Math.random() * 0.3 + 0.7,
+            algorithmFactors: ['Recent upload', 'User engagement', 'Content quality'],
+          };
+        } catch (transformError) {
+          console.error('Error transforming video:', video, transformError);
+          return null;
+        }
+      }).filter(Boolean); // Remove any null entries
 
+      console.log('Transformed videos:', transformedVideos);
       setVideos(transformedVideos);
       
       // If no videos found, show a helpful message
@@ -83,6 +96,8 @@ export function VideoFeed() {
       }
     } catch (error) {
       console.error('Error fetching videos:', error);
+      // Set empty array to prevent crashes
+      setVideos([]);
       toast({
         title: "Error",
         description: "Failed to load videos. Please try again.",

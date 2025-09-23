@@ -114,6 +114,18 @@ export function VideoCard({
     return num.toString();
   };
 
+  // Safety checks for required props
+  if (!id || !videoSrc || !user) {
+    console.error('VideoCard missing required props:', { id, videoSrc, user });
+    return (
+      <div className="relative w-full h-screen bg-card snap-start snap-always flex items-center justify-center">
+        <div className="text-center text-muted-foreground">
+          <p>Error loading video</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div ref={cardRef} className="relative w-full h-screen bg-card snap-start snap-always">
       {/* Video Player */}
