@@ -2,10 +2,10 @@ services:
   - type: web
     name: opentok-pwa
     env: static
-    buildCommand: npm ci && npm run build:pwa
+    buildCommand: npm install && npm run build:pwa
     staticPublishPath: ./dist
     packageManager: npm
-    nodeVersion: 18
+    nodeVersion: 20
     headers:
       - path: /*
         name: X-Frame-Options
