@@ -2,9 +2,10 @@ services:
   - type: web
     name: opentok-pwa
     env: static
-    buildCommand: npm install && npm run build:pwa
+    buildCommand: npm ci && npm run build:pwa
     staticPublishPath: ./dist
     packageManager: npm
+    nodeVersion: 18
     headers:
       - path: /*
         name: X-Frame-Options
@@ -34,13 +35,3 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: VITE_SUPABASE_URL
-        fromDatabase:
-          name: opentok-db
-          property: connectionString
-      - key: VITE_SUPABASE_ANON_KEY
-        fromDatabase:
-          name: opentok-db
-          property: anonKey
-      - key: VITE_VAPID_PUBLIC_KEY
-        generateValue: true
