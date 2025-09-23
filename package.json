@@ -11,7 +11,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate-icons": "node scripts/generate-icons.js",
-    "pwa:test": "vite preview --port 3000"
+    "pwa:test": "vite preview --port 3000",
+    "deploy:check": "node scripts/deploy.js",
+    "deploy:render": "npm run build:pwa && npm run deploy:check"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
