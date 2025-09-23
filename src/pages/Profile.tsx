@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VideoPlayer } from '@/components/VideoPlayer';
+import { EditProfileModal } from '@/components/EditProfileModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -47,6 +48,7 @@ function Profile() {
   const [error, setError] = useState<string | null>(null);
   const [isCurrentUser, setIsCurrentUser] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (username) {
@@ -60,6 +62,10 @@ function Profile() {
     setRetryCount(prev => prev + 1);
     setError(null);
     await fetchProfile();
+  };
+
+  const handleProfileUpdate = (updatedProfile: any) => {
+    setProfile(updatedProfile);
   };
 
   const fetchProfile = async () => {
@@ -372,7 +378,7 @@ function Profile() {
                     Share Profile
                   </Button>
                   {isCurrentUser && (
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={() => setIsEditModalOpen(true)}>
                       Edit Profile
                     </Button>
                   )}
@@ -475,6 +481,16 @@ function Profile() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Profile Modal */}
+      {profile && (
+        <EditProfileModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          profile={profile}
+          onProfileUpdate={handleProfileUpdate}
+        />
+      )}
     </div>
   );
 }
