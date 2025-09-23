@@ -37,6 +37,10 @@ export function EnhancedShareModal({
 
   const baseUrl = window.location.origin;
   const fullShareUrl = `${baseUrl}/video/${videoId}`;
+  
+  console.log('Share modal - baseUrl:', baseUrl);
+  console.log('Share modal - videoId:', videoId);
+  console.log('Share modal - fullShareUrl:', fullShareUrl);
 
   const handleNativeShare = async () => {
     if (!navigator.share) {

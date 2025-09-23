@@ -46,6 +46,9 @@ export function VideoFeed() {
 
       if (error) throw error;
 
+      console.log('Fetched videos from database:', data);
+      console.log('Number of videos found:', data?.length || 0);
+
       // Transform the data to match VideoCard interface
       const transformedVideos = data?.map((video: any) => ({
         id: video.id,

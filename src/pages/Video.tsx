@@ -56,6 +56,8 @@ function Video() {
       setLoading(true);
       setError(null);
 
+      console.log('Fetching video with ID:', videoId);
+
       const { data, error: fetchError } = await supabase
         .from('videos')
         .select(`
@@ -69,12 +71,27 @@ function Video() {
         .eq('id', videoId)
         .single();
 
+      console.log('Video fetch result:', { data, error: fetchError });
+
       if (fetchError) {
         console.error('Error fetching video:', fetchError);
+        
+        // Check if it's a "not found" error
+        if (fetchError.code === 'PGRST116') {
+          setError('Video not found - this video may have been deleted or the link is invalid');
+        } else {
+          setError('Failed to load video');
+        }
+        return;
+      }
+
+      if (!data) {
+        console.log('No video data returned');
         setError('Video not found');
         return;
       }
 
+      console.log('Video loaded successfully:', data);
       setVideo(data);
     } catch (err) {
       console.error('Error:', err);
