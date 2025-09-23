@@ -86,19 +86,44 @@ export default function Chat() {
       try {
         setLoading(true);
         
-        // First, get or create a chat between the two users
-        const { data: chatData, error: chatError } = await supabase
-          .rpc('get_or_create_chat', {
-            user1_id: currentUser.id,
-            user2_id: userId
-          });
+        // First, try to find an existing chat between the two users
+        const { data: existingChats, error: findError } = await supabase
+          .from('chats')
+          .select('id')
+          .contains('participants', [currentUser.id, userId]);
 
-        if (chatError) {
-          console.error('Error getting/creating chat:', chatError);
-          return;
+        if (findError) {
+          console.error('Error finding existing chat:', findError);
         }
 
-        setChatId(chatData);
+        let chatIdToUse = existingChats?.[0]?.id;
+
+        // If no chat exists, create one
+        if (!chatIdToUse) {
+          console.log('No existing chat found, creating new one...');
+          const { data: newChat, error: createError } = await supabase
+            .from('chats')
+            .insert({
+              participants: [currentUser.id, userId]
+            })
+            .select('id')
+            .single();
+
+          if (createError) {
+            console.error('Error creating chat:', createError);
+            toast({
+              title: "Error",
+              description: "Failed to create chat. Please try again.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          chatIdToUse = newChat.id;
+        }
+
+        console.log('Using chat ID:', chatIdToUse);
+        setChatId(chatIdToUse);
 
         // Then fetch messages for this chat
         const { data: messagesData, error: messagesError } = await supabase
@@ -112,7 +137,7 @@ export default function Chat() {
               avatar_url
             )
           `)
-          .eq('chat_id', chatData)
+          .eq('chat_id', chatIdToUse)
           .order('created_at', { ascending: true });
 
         if (messagesError) {
@@ -120,6 +145,7 @@ export default function Chat() {
           return;
         }
 
+        console.log('Fetched messages:', messagesData);
         setMessages(messagesData || []);
       } catch (error) {
         console.error('Error fetching chat and messages:', error);
@@ -156,10 +182,23 @@ export default function Chat() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newMessage.trim() || !currentUser || !chatId || sending) return;
+    if (!newMessage.trim() || !currentUser || !chatId || sending) {
+      console.log('Message send blocked:', {
+        hasMessage: !!newMessage.trim(),
+        hasUser: !!currentUser,
+        hasChatId: !!chatId,
+        isSending: sending
+      });
+      return;
+    }
 
     try {
       setSending(true);
+      console.log('Sending message:', {
+        content: newMessage.trim(),
+        sender_id: currentUser.id,
+        chat_id: chatId
+      });
       
       const { data, error } = await supabase
         .from('chat_messages')
@@ -175,12 +214,13 @@ export default function Chat() {
         console.error('Error sending message:', error);
         toast({
           title: "Error",
-          description: "Failed to send message",
+          description: `Failed to send message: ${error.message}`,
           variant: "destructive",
         });
         return;
       }
 
+      console.log('Message sent successfully:', data);
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
