@@ -254,7 +254,9 @@ function Profile() {
   };
 
   const handleShareProfile = async () => {
-    const profileUrl = `${window.location.origin}/profile/${username}`;
+    // Clean the username to remove @ symbol for URL
+    const cleanUsername = username?.startsWith('@') ? username.slice(1) : username;
+    const profileUrl = `${window.location.origin}/profile/${cleanUsername}`;
     
     if (navigator.share) {
       try {

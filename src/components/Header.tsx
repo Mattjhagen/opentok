@@ -136,7 +136,11 @@ export function Header() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem 
                 className="flex items-center gap-2"
-                onClick={() => navigate(`/profile/${user?.user_metadata?.username || 'me'}`)}
+                onClick={() => {
+                  const username = user?.user_metadata?.username || 'me';
+                  const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
+                  navigate(`/profile/${cleanUsername}`);
+                }}
               >
                 <User className="w-4 h-4" />
                 <div className="flex flex-col">
