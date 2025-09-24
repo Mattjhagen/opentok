@@ -31,6 +31,50 @@ const App = () => {
     console.log('Viewport:', window.innerWidth, 'x', window.innerHeight);
     console.log('Device Pixel Ratio:', window.devicePixelRatio);
     
+    // Debug CSS loading
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      console.log('Root element found:', rootElement);
+      const computedStyle = window.getComputedStyle(rootElement);
+      console.log('Root element background color:', computedStyle.backgroundColor);
+      console.log('Root element color:', computedStyle.color);
+    } else {
+      console.error('Root element not found!');
+    }
+    
+    // Check if CSS variables are loaded
+    const rootStyles = getComputedStyle(document.documentElement);
+    const backgroundVar = rootStyles.getPropertyValue('--background');
+    console.log('CSS variable --background:', backgroundVar);
+    
+    // Add a visible indicator if the app is loading
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'app-loading-indicator';
+    loadingIndicator.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0a0a;
+      color: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-family: system-ui, sans-serif;
+    `;
+    loadingIndicator.innerHTML = '<div>Loading OpenTok...</div>';
+    document.body.appendChild(loadingIndicator);
+    
+    // Remove loading indicator after a short delay
+    setTimeout(() => {
+      const indicator = document.getElementById('app-loading-indicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }, 1000);
+    
     // Check for common mobile issues
     if (window.innerWidth < 768) {
       console.log('Mobile device detected');
