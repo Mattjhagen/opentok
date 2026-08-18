@@ -31,6 +31,15 @@ export function VideoFeed() {
 
   useEffect(() => {
     fetchVideos();
+
+    const handleVideoUploaded = () => {
+      fetchVideos();
+    };
+
+    window.addEventListener('video-uploaded', handleVideoUploaded);
+    return () => {
+      window.removeEventListener('video-uploaded', handleVideoUploaded);
+    };
   }, []);
 
   const fetchVideos = async () => {
